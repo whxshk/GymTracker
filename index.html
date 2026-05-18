@@ -11,383 +11,740 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Gym Tracker">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            overscroll-behavior-y: none;
-            background-color: #0B0F19;
+            background: #0B0F19;
             color: #f1f5f9;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            overscroll-behavior-y: none;
             padding-bottom: 8rem;
-            font-family: system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
         }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        button { font-family: inherit; }
+
+        /* ── Header ── */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background: rgba(11,15,25,0.9);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 448px;
+            margin: 0 auto;
+        }
+        .header-left { display: flex; align-items: center; gap: 0.75rem; }
+        .day-badge {
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+        }
+        .workout-title {
+            font-size: 1.25rem;
+            font-weight: 900;
+            font-style: italic;
+            letter-spacing: -0.025em;
+            color: #fff;
+            text-transform: uppercase;
+        }
+        .workout-focus {
+            font-size: 10px;
+            color: #94a3b8;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 2px;
+        }
+        .workout-focus svg { color: #60a5fa; }
+        .reset-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            color: #94a3b8;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .reset-btn:hover { background: rgba(255,255,255,0.1); }
+        .reset-btn:active { transform: scale(0.9); }
+
+        /* ── Progress ── */
+        .progress-wrap {
+            max-width: 448px;
+            margin: 1rem auto 0;
+        }
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            padding: 0 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .progress-labels span { display: flex; align-items: center; gap: 4px; }
+        .progress-track {
+            height: 6px;
+            background: #1e293b;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.5s ease-out;
+        }
+
+        /* ── Main ── */
+        main {
+            max-width: 448px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* ── Timer ── */
+        .timer-card {
+            background: #121826;
+            border: 1px solid rgba(59,130,246,0.3);
+            border-radius: 1rem;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 0 30px -5px rgba(59,130,246,0.3);
+            position: sticky;
+            top: 108px;
+            z-index: 20;
+            backdrop-filter: blur(12px);
+            margin-bottom: 1rem;
+        }
+        .timer-left { display: flex; align-items: center; gap: 1rem; }
+        .timer-circle-wrap {
+            position: relative;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .timer-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        .timer-clock-icon { position: relative; z-index: 1; color: #60a5fa; }
+        .timer-phase {
+            font-size: 10px;
+            font-weight: 700;
+            color: #60a5fa;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .timer-digits {
+            font-size: 1.875rem;
+            font-weight: 900;
+            font-family: monospace;
+            line-height: 1;
+            letter-spacing: -0.05em;
+            color: #fff;
+        }
+        .timer-skip {
+            background: rgba(59,130,246,0.1);
+            color: #60a5fa;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid rgba(59,130,246,0.2);
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: background 0.2s;
+        }
+        .timer-skip:active { background: rgba(59,130,246,0.2); }
+
+        /* ── Exercise cards ── */
+        .exercise-list { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem; }
+
+        .ex-card {
+            background: #121826;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            overflow: hidden;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .ex-card.all-done {
+            border-color: rgba(16,185,129,0.3);
+            box-shadow: 0 0 20px -10px rgba(16,185,129,0.2);
+        }
+
+        .card-top {
+            padding: 1.25rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        .card-emoji-bg {
+            position: absolute;
+            right: -1rem;
+            top: -1rem;
+            font-size: 4.5rem;
+            opacity: 0.05;
+            pointer-events: none;
+            filter: grayscale(1);
+            line-height: 1;
+        }
+        .card-info-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            position: relative;
+            z-index: 1;
+        }
+        .card-img-wrap { position: relative; flex-shrink: 0; }
+        .card-img {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 1rem;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+            display: block;
+        }
+        .card-emoji-badge {
+            position: absolute;
+            bottom: -0.5rem;
+            right: -0.5rem;
+            font-size: 1.125rem;
+            background: #121826;
+            border-radius: 50%;
+            padding: 0.25rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            line-height: 1.2;
+        }
+        .card-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.25;
+            margin-bottom: 0.5rem;
+        }
+        .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag {
+            padding: 2px 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            font-size: 9px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .card-stats {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            margin-top: 1rem;
+            background: rgba(0,0,0,0.2);
+            padding: 0.625rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            z-index: 1;
+        }
+        .stat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .stat + .stat { border-left: 1px solid rgba(255,255,255,0.1); }
+        .stat-label {
+            font-size: 9px;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+        }
+        .stat-val {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .stat-val svg { flex-shrink: 0; }
+
+        .weight-box {
+            margin-top: 0.5rem;
+            background: rgba(59,130,246,0.1);
+            padding: 0.625rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(59,130,246,0.2);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .weight-label {
+            font-size: 9px;
+            color: #60a5fa;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .weight-val { font-size: 0.875rem; font-weight: 700; color: #bfdbfe; }
+
+        /* ── Set buttons ── */
+        .sets-area {
+            padding: 1.25rem;
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.1));
+        }
+        .sets-row { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+        .set-btn {
+            flex: 1;
+            min-width: 3rem;
+            height: 3.5rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.125rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+        .set-btn.pending {
+            background: #1C2436;
+            color: #64748b;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .set-btn.pending:hover { border-color: rgba(255,255,255,0.2); }
+        .set-btn.pending:active { transform: scale(0.95); }
+        .set-btn.done {
+            background: linear-gradient(135deg, #34d399, #059669);
+            color: #fff;
+            box-shadow: 0 10px 15px -3px rgba(16,185,129,0.2);
+            transform: scale(0.98);
+        }
+
+        /* ── Tip box ── */
+        .tip-box {
+            padding: 1rem;
+            border-radius: 1rem;
+            border: 1px solid;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .tip-box.blue {
+            background: linear-gradient(to right, rgba(30,58,138,0.2), rgba(88,28,135,0.2));
+            border-color: rgba(59,130,246,0.2);
+        }
+        .tip-box.orange {
+            background: linear-gradient(to right, rgba(120,53,15,0.2), rgba(127,29,29,0.2));
+            border-color: rgba(249,115,22,0.2);
+        }
+        .tip-icon {
+            padding: 0.5rem;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tip-icon.blue { background: rgba(59,130,246,0.2); color: #60a5fa; }
+        .tip-icon.orange { background: rgba(249,115,22,0.2); color: #fb923c; }
+        .tip-text { font-size: 0.75rem; font-weight: 500; line-height: 1.625; }
+        .tip-text.blue { color: rgba(191,219,254,0.7); }
+        .tip-text.orange { color: rgba(254,215,170,0.8); }
+
+        /* ── Bottom nav ── */
+        .bottom-nav {
+            position: fixed;
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+            background: rgba(18,24,38,0.9);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 1.5rem;
+            padding: 0.25rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            z-index: 40;
+            display: flex;
+            overflow-x: auto;
+        }
+        .bottom-nav::-webkit-scrollbar { display: none; }
+        .bottom-nav { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 60px;
+            flex: 1;
+            padding: 0.75rem 0.25rem;
+            border-radius: 1rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #64748b;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .nav-btn.active { background: rgba(255,255,255,0.1); color: #fff; }
+        .nav-btn:not(.active):hover { background: rgba(255,255,255,0.05); color: #94a3b8; }
+        .nav-icon { font-size: 1.25rem; line-height: 1; margin-bottom: 2px; transition: transform 0.3s; }
+        .nav-btn.active .nav-icon { transform: scale(1.25); margin-bottom: 4px; }
+        .nav-label { font-size: 9px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+        .nav-indicator {
+            position: absolute;
+            bottom: 0;
+            width: 2rem;
+            height: 4px;
+            border-radius: 4px 4px 0 0;
+        }
+
+        /* ── Day gradient backgrounds ── */
+        .g-orange  { background: linear-gradient(135deg, #f97316, #dc2626); }
+        .g-blue    { background: linear-gradient(135deg, #3b82f6, #0891b2); }
+        .g-green   { background: linear-gradient(135deg, #22c55e, #059669); }
+        .g-purple  { background: linear-gradient(135deg, #a855f7, #db2777); }
+        .g-indigo  { background: linear-gradient(135deg, #6366f1, #3b82f6); }
+        .g-teal    { background: linear-gradient(135deg, #14b8a6, #059669); }
+        .g-slate   { background: linear-gradient(135deg, #64748b, #334155); }
+
+        /* ── Animations ── */
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+        .pulse { animation: pulse 2s cubic-bezier(.4,0,.6,1) infinite; }
     </style>
 </head>
-<body class="selection:bg-blue-500/30">
+<body>
     <div id="app"></div>
-
     <script>
+        /* ── Inline SVG icons ── */
+        const IC = {
+            check: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>`,
+            reset: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`,
+            target: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+            activity: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+            clock: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+            clockSm: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+            flame: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`,
+            dumbbell: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829 2 2 0 1 1 2.828 2.829l1.767-1.768a2 2 0 1 1 2.829 2.829z"/></svg>`,
+            info: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`,
+        };
+
+        /* ── Day gradient class map ── */
+        const GRAD = {
+            'from-orange-500 to-red-600':   'g-orange',
+            'from-blue-500 to-cyan-600':    'g-blue',
+            'from-green-500 to-emerald-600':'g-green',
+            'from-purple-500 to-pink-600':  'g-purple',
+            'from-indigo-500 to-blue-600':  'g-indigo',
+            'from-teal-500 to-emerald-600': 'g-teal',
+            'from-slate-500 to-slate-700':  'g-slate',
+        };
+
+        /* ── Workout data ── */
         const workoutData = [
-          {
-            day: "Day 1",
-            title: "Push Heavy",
-            icon: "🦍",
-            focus: "Chest, Shoulders, Triceps",
-            color: "from-orange-500 to-red-600",
-            exercises: [
-              { name: "Incline Chest Press", emoji: "💥", tags: ["Upper Chest", "Compound"], sets: 3, reps: "6–10", rest: 180, weight: "35–55 kg" },
-              { name: "Flat Chest Press", emoji: "🧱", tags: ["Mid Chest", "Compound"], sets: 3, reps: "8–12", rest: 180, weight: "40–65 kg" },
-              { name: "Shoulder Press", emoji: "🥥", tags: ["Front Delts"], sets: 2, reps: "8–12", rest: 180, weight: "25–45 kg" },
-              { name: "Cable Lateral Raise", emoji: "🦅", tags: ["Side Delts"], sets: 3, reps: "12–15", rest: 60, weight: "5–10 kg per arm" },
-              { name: "Overhead Triceps Ext", emoji: "🐴", tags: ["Long Head"], sets: 2, reps: "10–12", rest: 60, weight: "20–35 kg" },
-            ]
-          },
-          {
-            day: "Day 2",
-            title: "Pull Heavy",
-            icon: "🦏",
-            focus: "Back, Biceps, Rear Delts",
-            color: "from-blue-500 to-cyan-600",
-            exercises: [
-              { name: "Lat Pulldown", emoji: "🦇", tags: ["Lats", "Width"], sets: 3, reps: "8–12", rest: 180, weight: "45–70 kg" },
-              { name: "Seated Cable Row", emoji: "🚣", tags: ["Mid Back", "Thickness"], sets: 3, reps: "8–12", rest: 180, weight: "45–70 kg" },
-              { name: "Rear Delt Fly", emoji: "🎯", tags: ["Rear Delts"], sets: 2, reps: "12–15", rest: 90, weight: "25–45 kg" },
-              { name: "Preacher Curl", emoji: "💪", tags: ["Short Head"], sets: 2, reps: "10–12", rest: 60, weight: "20–35 kg" },
-              { name: "Hammer Curl", emoji: "🔨", tags: ["Brachialis"], sets: 2, reps: "10–12", rest: 60, weight: "10–16 kg dumbbells" },
-            ]
-          },
-          {
-            day: "Day 3",
-            title: "Legs Heavy",
-            icon: "🦖",
-            focus: "Quads, Hams, Calves",
-            color: "from-green-500 to-emerald-600",
-            note: "Be careful. At 123 kg, your knees and lower back handle a lot. Full range, controlled reps, no ego lifting.",
-            exercises: [
-              { name: "Hack Squat", emoji: "🏗️", tags: ["Quads", "Compound"], sets: 3, reps: "6–10", rest: 180, weight: "40–80 kg added" },
-              { name: "Leg Press", emoji: "🚂", tags: ["Overall Leg"], sets: 2, reps: "8–12", rest: 180, weight: "120–200 kg" },
-              { name: "Romanian Deadlift", emoji: "hinges", tags: ["Hamstrings", "Glutes"], sets: 3, reps: "8–10", rest: 180, weight: "50–80 kg barbell / 20–32 kg DBs" },
-              { name: "Seated Leg Curl", emoji: "🪝", tags: ["Hamstrings"], sets: 2, reps: "10–12", rest: 90, weight: "35–60 kg" },
-              { name: "Standing Calf Raise", emoji: "🦵", tags: ["Calves"], sets: 3, reps: "12–15", rest: 90, weight: "60–100 kg" },
-            ]
-          },
-          {
-            day: "Day 4",
-            title: "Push Volume",
-            icon: "⚡",
-            focus: "Chest, Shoulders, Triceps",
-            color: "from-purple-500 to-pink-600",
-            exercises: [
-              { name: "Pec Deck", emoji: "🦋", tags: ["Chest Isolation"], sets: 3, reps: "12–15", rest: 90, weight: "35–60 kg" },
-              { name: "Push-ups", emoji: "🔥", tags: ["Burnout"], sets: 2, reps: "1-2 RIR", rest: 90, weight: "Bodyweight (or Incline)" },
-              { name: "Dumbbell Lateral Raise", emoji: "🦅", tags: ["Side Delts"], sets: 3, reps: "12–15", rest: 60, weight: "6–10 kg DBs" },
-              { name: "Cable Lateral Raise", emoji: "🎯", tags: ["Side Delts"], sets: 2, reps: "15", rest: 60, weight: "5–10 kg per arm" },
-              { name: "Triceps Rope Pushdown", emoji: "🐴", tags: ["Triceps"], sets: 3, reps: "10–15", rest: 60, weight: "25–45 kg" },
-            ]
-          },
-          {
-            day: "Day 5",
-            title: "Pull Volume",
-            icon: "🌊",
-            focus: "Back, Biceps, Rear Delts",
-            color: "from-indigo-500 to-blue-600",
-            exercises: [
-              { name: "Chest-Supported Row", emoji: "🛡️", tags: ["Mid Back"], sets: 3, reps: "8–12", rest: 180, weight: "45–75 kg" },
-              { name: "Straight-Arm Pulldown", emoji: "⛷️", tags: ["Lats Isolation"], sets: 3, reps: "12–15", rest: 90, weight: "20–35 kg" },
-              { name: "Face Pull", emoji: "👹", tags: ["Upper Back", "Health"], sets: 3, reps: "12–15", rest: 60, weight: "15–30 kg" },
-              { name: "Dumbbell Curl", emoji: "💪", tags: ["Biceps"], sets: 2, reps: "10–12", rest: 60, weight: "10–16 kg DBs" },
-              { name: "Cable Curl", emoji: "⛓️", tags: ["Constant Tension"], sets: 2, reps: "10–12", rest: 60, weight: "20–35 kg" },
-            ]
-          },
-          {
-            day: "Day 6",
-            title: "Legs Volume",
-            icon: "🔋",
-            focus: "Quads, Hams, Glutes",
-            color: "from-teal-500 to-emerald-600",
-            exercises: [
-              { name: "Leg Extension", emoji: "🦵", tags: ["Quads Isolation"], sets: 3, reps: "12–15", rest: 90, weight: "40–70 kg" },
-              { name: "Seated Leg Curl", emoji: "🪝", tags: ["Hamstrings"], sets: 3, reps: "12–15", rest: 90, weight: "35–60 kg" },
-              { name: "Hip Thrust", emoji: "🍑", tags: ["Glutes"], sets: 3, reps: "8–12", rest: 180, weight: "70–120 kg" },
-              { name: "Adductor Machine", emoji: "🗜️", tags: ["Inner Thigh"], sets: 2, reps: "12–15", rest: 90, weight: "35–65 kg" },
-              { name: "Abductor Machine", emoji: "🛸", tags: ["Outer Glute"], sets: 2, reps: "12–15", rest: 90, weight: "35–65 kg" },
-              { name: "Seated Calf Raise", emoji: "👟", tags: ["Soleus"], sets: 3, reps: "12–15", rest: 90, weight: "35–70 kg" },
-            ]
-          },
-          {
-            day: "Day 7",
-            title: "Full Rest",
-            icon: "🧘‍♂️",
-            focus: "Recovery",
-            color: "from-slate-500 to-slate-700",
-            isRest: true,
-            exercises: [
-              { name: "Walking (Low Intensity)", emoji: "🚶‍♂️", tags: ["Active Recovery"], sets: 1, reps: "30–60 mins", rest: 0, weight: "Bodyweight" },
-              { name: "Nutrition Check", emoji: "🥗", tags: ["Diet"], sets: 1, reps: "Deficit", rest: 0, weight: "N/A" }
-            ]
-          }
+          { day:"Day 1", title:"Push Heavy", icon:"🦍", focus:"Chest, Shoulders, Triceps", color:"from-orange-500 to-red-600",
+            exercises:[
+              { name:"Incline Chest Press", emoji:"💥", tags:["Upper Chest","Compound"], sets:3, reps:"6–10", rest:180, weight:"35–55 kg" },
+              { name:"Flat Chest Press", emoji:"🧱", tags:["Mid Chest","Compound"], sets:3, reps:"8–12", rest:180, weight:"40–65 kg" },
+              { name:"Shoulder Press", emoji:"🥥", tags:["Front Delts"], sets:2, reps:"8–12", rest:180, weight:"25–45 kg" },
+              { name:"Cable Lateral Raise", emoji:"🦅", tags:["Side Delts"], sets:3, reps:"12–15", rest:60, weight:"5–10 kg per arm" },
+              { name:"Overhead Triceps Ext", emoji:"🐴", tags:["Long Head"], sets:2, reps:"10–12", rest:60, weight:"20–35 kg" },
+            ]},
+          { day:"Day 2", title:"Pull Heavy", icon:"🦏", focus:"Back, Biceps, Rear Delts", color:"from-blue-500 to-cyan-600",
+            exercises:[
+              { name:"Lat Pulldown", emoji:"🦇", tags:["Lats","Width"], sets:3, reps:"8–12", rest:180, weight:"45–70 kg" },
+              { name:"Seated Cable Row", emoji:"🚣", tags:["Mid Back","Thickness"], sets:3, reps:"8–12", rest:180, weight:"45–70 kg" },
+              { name:"Rear Delt Fly", emoji:"🎯", tags:["Rear Delts"], sets:2, reps:"12–15", rest:90, weight:"25–45 kg" },
+              { name:"Preacher Curl", emoji:"💪", tags:["Short Head"], sets:2, reps:"10–12", rest:60, weight:"20–35 kg" },
+              { name:"Hammer Curl", emoji:"🔨", tags:["Brachialis"], sets:2, reps:"10–12", rest:60, weight:"10–16 kg dumbbells" },
+            ]},
+          { day:"Day 3", title:"Legs Heavy", icon:"🦖", focus:"Quads, Hams, Calves", color:"from-green-500 to-emerald-600",
+            note:"Be careful. At 123 kg, your knees and lower back handle a lot. Full range, controlled reps, no ego lifting.",
+            exercises:[
+              { name:"Hack Squat", emoji:"🏗️", tags:["Quads","Compound"], sets:3, reps:"6–10", rest:180, weight:"40–80 kg added" },
+              { name:"Leg Press", emoji:"🚂", tags:["Overall Leg"], sets:2, reps:"8–12", rest:180, weight:"120–200 kg" },
+              { name:"Romanian Deadlift", emoji:"🏋️", tags:["Hamstrings","Glutes"], sets:3, reps:"8–10", rest:180, weight:"50–80 kg barbell / 20–32 kg DBs" },
+              { name:"Seated Leg Curl", emoji:"🪝", tags:["Hamstrings"], sets:2, reps:"10–12", rest:90, weight:"35–60 kg" },
+              { name:"Standing Calf Raise", emoji:"🦵", tags:["Calves"], sets:3, reps:"12–15", rest:90, weight:"60–100 kg" },
+            ]},
+          { day:"Day 4", title:"Push Volume", icon:"⚡", focus:"Chest, Shoulders, Triceps", color:"from-purple-500 to-pink-600",
+            exercises:[
+              { name:"Pec Deck", emoji:"🦋", tags:["Chest Isolation"], sets:3, reps:"12–15", rest:90, weight:"35–60 kg" },
+              { name:"Push-ups", emoji:"🔥", tags:["Burnout"], sets:2, reps:"1-2 RIR", rest:90, weight:"Bodyweight (or Incline)" },
+              { name:"Dumbbell Lateral Raise", emoji:"🦅", tags:["Side Delts"], sets:3, reps:"12–15", rest:60, weight:"6–10 kg DBs" },
+              { name:"Cable Lateral Raise", emoji:"🎯", tags:["Side Delts"], sets:2, reps:"15", rest:60, weight:"5–10 kg per arm" },
+              { name:"Triceps Rope Pushdown", emoji:"🐴", tags:["Triceps"], sets:3, reps:"10–15", rest:60, weight:"25–45 kg" },
+            ]},
+          { day:"Day 5", title:"Pull Volume", icon:"🌊", focus:"Back, Biceps, Rear Delts", color:"from-indigo-500 to-blue-600",
+            exercises:[
+              { name:"Chest-Supported Row", emoji:"🛡️", tags:["Mid Back"], sets:3, reps:"8–12", rest:180, weight:"45–75 kg" },
+              { name:"Straight-Arm Pulldown", emoji:"⛷️", tags:["Lats Isolation"], sets:3, reps:"12–15", rest:90, weight:"20–35 kg" },
+              { name:"Face Pull", emoji:"👹", tags:["Upper Back","Health"], sets:3, reps:"12–15", rest:60, weight:"15–30 kg" },
+              { name:"Dumbbell Curl", emoji:"💪", tags:["Biceps"], sets:2, reps:"10–12", rest:60, weight:"10–16 kg DBs" },
+              { name:"Cable Curl", emoji:"⛓️", tags:["Constant Tension"], sets:2, reps:"10–12", rest:60, weight:"20–35 kg" },
+            ]},
+          { day:"Day 6", title:"Legs Volume", icon:"🔋", focus:"Quads, Hams, Glutes", color:"from-teal-500 to-emerald-600",
+            exercises:[
+              { name:"Leg Extension", emoji:"🦵", tags:["Quads Isolation"], sets:3, reps:"12–15", rest:90, weight:"40–70 kg" },
+              { name:"Seated Leg Curl", emoji:"🪝", tags:["Hamstrings"], sets:3, reps:"12–15", rest:90, weight:"35–60 kg" },
+              { name:"Hip Thrust", emoji:"🍑", tags:["Glutes"], sets:3, reps:"8–12", rest:180, weight:"70–120 kg" },
+              { name:"Adductor Machine", emoji:"🗜️", tags:["Inner Thigh"], sets:2, reps:"12–15", rest:90, weight:"35–65 kg" },
+              { name:"Abductor Machine", emoji:"🛸", tags:["Outer Glute"], sets:2, reps:"12–15", rest:90, weight:"35–65 kg" },
+              { name:"Seated Calf Raise", emoji:"👟", tags:["Soleus"], sets:3, reps:"12–15", rest:90, weight:"35–70 kg" },
+            ]},
+          { day:"Day 7", title:"Full Rest", icon:"🧘‍♂️", focus:"Recovery", color:"from-slate-500 to-slate-700", isRest:true,
+            exercises:[
+              { name:"Walking (Low Intensity)", emoji:"🚶‍♂️", tags:["Active Recovery"], sets:1, reps:"30–60 mins", rest:0, weight:"Bodyweight" },
+              { name:"Nutrition Check", emoji:"🥗", tags:["Diet"], sets:1, reps:"Deficit", rest:0, weight:"N/A" },
+            ]},
         ];
 
+        /* ── State ── */
         let activeDay = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
         let completedSets = JSON.parse(localStorage.getItem('gymCompletedSets') || '{}');
         let timeLeft = 0;
         let totalRestTime = 0;
         let timerInterval = null;
 
-        function saveProgress() {
+        function save() {
             localStorage.setItem('gymCompletedSets', JSON.stringify(completedSets));
-        }
-
-        function init() {
-            renderApp();
         }
 
         function toggleSet(exIdx, setIdx, rest) {
             const key = `${activeDay}-${exIdx}-${setIdx}`;
             completedSets[key] = !completedSets[key];
-            saveProgress();
-
-            if (completedSets[key] && rest > 0) {
-                startTimer(rest);
-            }
-            renderApp();
+            save();
+            if (completedSets[key] && rest > 0) startTimer(rest);
+            render();
         }
 
         function resetDay() {
-            Object.keys(completedSets).forEach(key => {
-                if (key.startsWith(`${activeDay}-`)) {
-                    delete completedSets[key];
-                }
+            Object.keys(completedSets).forEach(k => {
+                if (k.startsWith(`${activeDay}-`)) delete completedSets[k];
             });
-            saveProgress();
+            save();
             stopTimer();
-            renderApp();
+            render();
         }
 
-        function changeDay(idx) {
-            activeDay = idx;
-            renderApp();
-        }
+        function changeDay(idx) { activeDay = idx; render(); }
 
-        function startTimer(seconds) {
+        function startTimer(secs) {
             stopTimer();
-            timeLeft = seconds;
-            totalRestTime = seconds;
+            timeLeft = totalRestTime = secs;
             timerInterval = setInterval(() => {
                 timeLeft--;
-                if (timeLeft <= 0) {
-                    stopTimer();
-                } else {
-                    renderTimerText();
-                }
+                if (timeLeft <= 0) { stopTimer(); return; }
+                updateTimerDOM();
             }, 1000);
-            renderApp();
+            render();
         }
 
         function stopTimer() {
-            if (timerInterval) clearInterval(timerInterval);
+            clearInterval(timerInterval);
             timerInterval = null;
             timeLeft = 0;
-            const container = document.getElementById('timer-container');
-            if (container) container.style.display = 'none';
         }
 
-        function skipTimer() {
-            stopTimer();
-        }
-
-        function renderTimerText() {
-            const timerEl = document.getElementById('timer-text');
-            if (timerEl && timeLeft > 0) {
+        function updateTimerDOM() {
+            const digits = document.getElementById('timer-digits');
+            if (digits) {
                 const m = Math.floor(timeLeft / 60);
-                const s = (timeLeft % 60).toString().padStart(2, '0');
-                timerEl.innerText = `${m}:${s}`;
+                const s = String(timeLeft % 60).padStart(2, '0');
+                digits.textContent = `${m}:${s}`;
             }
-            const circle = document.getElementById('timer-circle-progress');
-            if (circle && totalRestTime > 0) {
-                const offset = 138 - (138 * timeLeft / totalRestTime);
-                circle.style.strokeDashoffset = offset;
+            const ring = document.getElementById('timer-ring');
+            if (ring && totalRestTime > 0) {
+                ring.style.strokeDashoffset = 138 - (138 * timeLeft / totalRestTime);
             }
         }
 
-        function renderApp() {
-            const currentWorkout = workoutData[activeDay];
-            const totalSets = currentWorkout.exercises?.reduce((acc, ex) => acc + ex.sets, 0) || 0;
-            const completedSetsCount = Object.keys(completedSets).filter(k => k.startsWith(`${activeDay}-`) && completedSets[k]).length;
-            const progressPercent = totalSets === 0 ? 100 : Math.round((completedSetsCount / totalSets) * 100);
+        /* ── Render ── */
+        function render() {
+            const w = workoutData[activeDay];
+            const gradClass = GRAD[w.color] || 'g-slate';
+            const totalSets = w.exercises.reduce((a, ex) => a + ex.sets, 0);
+            const doneSets = Object.keys(completedSets).filter(k => k.startsWith(`${activeDay}-`) && completedSets[k]).length;
+            const pct = totalSets === 0 ? 100 : Math.round(doneSets / totalSets * 100);
 
-            let exercisesHtml = '';
-            if (currentWorkout.exercises) {
-                currentWorkout.exercises.forEach((ex, exIdx) => {
-                    const isAllDone = ex.sets > 0 && Array.from({length: ex.sets}).every((_, i) => completedSets[`${activeDay}-${exIdx}-${i}`]);
-
-                    let tagsHtml = (ex.tags || []).map(tag => `<span class="px-2 py-0.5 bg-white/5 rounded-md text-[9px] font-bold text-slate-400 uppercase tracking-wide border border-white/5">${tag}</span>`).join('');
-
-                    let setsHtml = '';
-                    for(let setIdx=0; setIdx<ex.sets; setIdx++) {
-                        const isDone = completedSets[`${activeDay}-${exIdx}-${setIdx}`];
-                        const btnClass = isDone
-                            ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-lg shadow-emerald-500/20 scale-[0.98]'
-                            : 'bg-[#1C2436] text-slate-500 border border-white/5';
-
-                        const content = isDone ? `<i data-lucide="check-circle-2" class="w-6 h-6 stroke-[3]"></i>` : (setIdx + 1);
-
-                        setsHtml += `
-                            <button onclick="toggleSet(${exIdx}, ${setIdx}, ${ex.rest})" class="flex-1 min-w-[3rem] h-14 rounded-2xl flex items-center justify-center font-black text-lg transition-all duration-300 ${btnClass}">
-                                ${content}
-                            </button>
-                        `;
-                    }
-
-                    exercisesHtml += `
-                    <div class="bg-[#121826] rounded-3xl border transition-all duration-300 overflow-hidden mb-4 ${isAllDone ? 'border-emerald-500/30 shadow-[0_0_20px_-10px_rgba(16,185,129,0.2)]' : 'border-white/5'}">
-                        <div class="p-5 border-b border-white/5 relative overflow-hidden">
-                            <div class="absolute -right-4 -top-4 text-7xl opacity-5 pointer-events-none grayscale">${ex.emoji}</div>
-                            <div class="flex gap-4 mb-3 relative z-10">
-                                <div class="relative shrink-0">
-                                    <img src="https://picsum.photos/seed/${ex.name.replace(/\s/g, '')}/150/150?grayscale" alt="${ex.name}" class="w-16 h-16 rounded-2xl object-cover border border-white/10 shadow-lg shadow-black/50" onerror="this.style.display='none'">
-                                    <span class="absolute -bottom-2 -right-2 text-lg drop-shadow-md bg-[#121826] rounded-full p-1 border border-white/10">${ex.emoji}</span>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-lg text-white leading-tight">${ex.name}</h3>
-                                    <div class="flex flex-wrap gap-1.5 mt-2">${tagsHtml}</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4 mt-4 bg-black/20 p-2.5 rounded-xl border border-white/5 relative z-10">
-                                <div class="flex-1 flex flex-col items-center border-r border-white/10">
-                                    <span class="text-[9px] text-slate-500 uppercase font-bold tracking-widest mb-1">Target</span>
-                                    <span class="text-sm font-bold text-white flex items-center gap-1"><i data-lucide="flame" class="w-3 h-3 text-orange-500"></i> ${ex.reps}</span>
-                                </div>
-                                <div class="flex-1 flex flex-col items-center border-r border-white/10">
-                                    <span class="text-[9px] text-slate-500 uppercase font-bold tracking-widest mb-1">Volume</span>
-                                    <span class="text-sm font-bold text-white flex items-center gap-1"><i data-lucide="dumbbell" class="w-3 h-3 text-blue-400"></i> ${ex.sets} Sets</span>
-                                </div>
-                                <div class="flex-1 flex flex-col items-center">
-                                    <span class="text-[9px] text-slate-500 uppercase font-bold tracking-widest mb-1">Rest</span>
-                                    <span class="text-sm font-bold text-white flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3 text-emerald-400"></i> ${ex.rest}s</span>
-                                </div>
-                            </div>
-                            <div class="mt-2 bg-blue-500/10 p-2.5 rounded-xl border border-blue-500/20 text-center relative z-10">
-                                <span class="text-[9px] text-blue-400 uppercase font-bold tracking-widest block mb-0.5">Starting Weight</span>
-                                <span class="text-sm font-bold text-blue-100">${ex.weight}</span>
-                            </div>
-                        </div>
-                        <div class="p-5 bg-gradient-to-b from-transparent to-black/10 relative z-10">
-                            <div class="flex flex-wrap gap-3">
-                                ${setsHtml}
-                            </div>
-                        </div>
-                    </div>
-                    `;
-                });
-            }
-
-            let navHtml = '';
-            workoutData.forEach((day, idx) => {
-                const isActive = activeDay === idx;
-                navHtml += `
-                <button onclick="changeDay(${idx})" class="flex flex-col items-center min-w-[60px] flex-1 py-3 rounded-2xl transition-all duration-300 relative ${isActive ? 'bg-white/10 text-white' : 'text-slate-500 hover:bg-white/5'}">
-                    <span class="text-xl transition-transform duration-300 ${isActive ? 'scale-125 mb-1' : 'scale-100 mb-0.5'}">${day.icon}</span>
-                    <span class="text-[9px] font-black tracking-widest uppercase transition-opacity ${isActive ? 'opacity-100' : 'opacity-70'}">D${idx + 1}</span>
-                    ${isActive ? `<div class="absolute bottom-0 w-8 h-1 rounded-t-full bg-gradient-to-r ${day.color}"></div>` : ''}
-                </button>
-                `;
-            });
-
-            let timerHtml = '';
+            /* Timer */
+            let timerHTML = '';
             if (timeLeft > 0) {
                 const m = Math.floor(timeLeft / 60);
-                const s = (timeLeft % 60).toString().padStart(2, '0');
-                timerHtml = `
-                <div id="timer-container" class="bg-[#121826] border border-blue-500/30 rounded-2xl p-4 flex justify-between items-center shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)] sticky top-[100px] z-20 backdrop-blur-md mb-4">
-                    <div class="flex items-center gap-4">
-                        <div class="relative flex items-center justify-center w-12 h-12">
-                            <svg class="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 48 48">
-                                <circle cx="24" cy="24" r="22" stroke="#1e293b" stroke-width="3" fill="transparent"/>
-                                <circle id="timer-circle-progress" cx="24" cy="24" r="22" stroke="#3b82f6" stroke-width="3" fill="transparent" stroke-dasharray="138" stroke-dashoffset="0" style="transition: stroke-dashoffset 1s linear;"/>
+                const s = String(timeLeft % 60).padStart(2, '0');
+                const offset = 138 - (138 * timeLeft / totalRestTime);
+                timerHTML = `
+                <div class="timer-card">
+                    <div class="timer-left">
+                        <div class="timer-circle-wrap">
+                            <svg class="timer-svg" viewBox="0 0 48 48">
+                                <circle cx="24" cy="24" r="22" stroke="#1e293b" stroke-width="3" fill="none"/>
+                                <circle id="timer-ring" cx="24" cy="24" r="22" stroke="#3b82f6" stroke-width="3" fill="none"
+                                    stroke-dasharray="138" stroke-dashoffset="${offset}"
+                                    style="transition:stroke-dashoffset 1s linear;"/>
                             </svg>
-                            <i data-lucide="clock" class="w-4 h-4 text-blue-400 animate-pulse relative z-10"></i>
+                            <span class="timer-clock-icon pulse">${IC.clock}</span>
                         </div>
                         <div>
-                            <p class="text-[10px] uppercase font-bold text-blue-400 tracking-wider">Recovery Phase</p>
-                            <p id="timer-text" class="text-3xl font-black font-mono leading-none tracking-tighter text-white">${m}:${s}</p>
+                            <p class="timer-phase">Recovery Phase</p>
+                            <p class="timer-digits" id="timer-digits">${m}:${s}</p>
                         </div>
                     </div>
-                    <button onclick="skipTimer()" class="bg-blue-500/10 text-blue-400 px-5 py-2.5 rounded-xl text-xs font-bold border border-blue-500/20 active:bg-blue-500/20 transition-colors uppercase tracking-wider">Skip</button>
-                </div>
-                `;
+                    <button class="timer-skip" onclick="stopTimer();render()">Skip</button>
+                </div>`;
             }
 
-            const noteClass = currentWorkout.note ? 'from-orange-900/20 to-red-900/20 border-orange-500/20' : 'from-blue-900/20 to-purple-900/20 border-blue-500/20';
-            const noteIconClass = currentWorkout.note ? 'bg-orange-500/20 text-orange-400' : 'bg-blue-500/20 text-blue-400';
-            const noteTextClass = currentWorkout.note ? 'text-orange-100/80' : 'text-blue-100/70';
-            const noteText = currentWorkout.note || "Stay 1-3 reps from failure on big lifts. Focus on control, not ego.";
+            /* Exercises */
+            const exercisesHTML = w.exercises.map((ex, exIdx) => {
+                const allDone = ex.sets > 0 && [...Array(ex.sets)].every((_, i) => completedSets[`${activeDay}-${exIdx}-${i}`]);
+                const tags = ex.tags.map(t => `<span class="tag">${t}</span>`).join('');
+                const sets = [...Array(ex.sets)].map((_, si) => {
+                    const done = completedSets[`${activeDay}-${exIdx}-${si}`];
+                    return `<button class="set-btn ${done ? 'done' : 'pending'}" onclick="toggleSet(${exIdx},${si},${ex.rest})">
+                        ${done ? IC.check : si + 1}
+                    </button>`;
+                }).join('');
 
-            const appHtml = `
-                <header class="sticky top-0 z-30 bg-[#0B0F19]/90 backdrop-blur-xl border-b border-white/5 p-4 shadow-2xl">
-                    <div class="flex justify-between items-center max-w-md mx-auto">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2 rounded-xl bg-gradient-to-br ${currentWorkout.color} shadow-lg flex items-center justify-center text-2xl">
-                                ${currentWorkout.icon}
+                return `
+                <div class="ex-card ${allDone ? 'all-done' : ''}">
+                    <div class="card-top">
+                        <div class="card-emoji-bg">${ex.emoji}</div>
+                        <div class="card-info-row">
+                            <div class="card-img-wrap">
+                                <img class="card-img" src="https://picsum.photos/seed/${ex.name.replace(/\s/g,'')}/150/150?grayscale" alt="${ex.name}" onerror="this.style.display='none'">
+                                <span class="card-emoji-badge">${ex.emoji}</span>
                             </div>
                             <div>
-                                <h1 class="text-xl font-black italic tracking-tight text-white uppercase flex items-center gap-2">
-                                    ${currentWorkout.title}
-                               </h1>
-                                <p class="text-[10px] text-slate-400 font-bold tracking-widest uppercase flex items-center gap-1">
-                                    <i data-lucide="target" class="w-3 h-3 text-blue-400"></i> ${currentWorkout.focus}
-                                </p>
+                                <div class="card-name">${ex.name}</div>
+                                <div class="tags">${tags}</div>
                             </div>
                         </div>
-                        <button onclick="resetDay()" class="h-10 w-10 flex items-center justify-center bg-white/5 rounded-full text-slate-400 active:scale-90 transition-all border border-white/10 hover:bg-white/10">
-                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                    <div class="max-w-md mx-auto mt-4">
-                        <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1.5 px-1 uppercase tracking-wider">
-                            <span class="flex items-center gap-1"><i data-lucide="activity" class="w-3 h-3"></i> Progress</span>
-                            <span>${completedSetsCount} / ${totalSets} Sets</span>
+                        <div class="card-stats">
+                            <div class="stat">
+                                <span class="stat-label">Target</span>
+                                <span class="stat-val" style="color:#fff">${IC.flame.replace('stroke="currentColor"','stroke="#f97316"')} ${ex.reps}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Volume</span>
+                                <span class="stat-val" style="color:#fff">${IC.dumbbell.replace('stroke="currentColor"','stroke="#60a5fa"')} ${ex.sets} Sets</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Rest</span>
+                                <span class="stat-val" style="color:#fff">${IC.clockSm.replace('stroke="currentColor"','stroke="#34d399"')} ${ex.rest}s</span>
+                            </div>
                         </div>
-                        <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r ${currentWorkout.color} transition-all duration-500 ease-out" style="width: ${progressPercent}%"></div>
+                        <div class="weight-box">
+                            <span class="weight-label">Starting Weight</span>
+                            <span class="weight-val">${ex.weight}</span>
                         </div>
                     </div>
-                </header>
+                    <div class="sets-area">
+                        <div class="sets-row">${sets}</div>
+                    </div>
+                </div>`;
+            }).join('');
 
-                <main class="max-w-md mx-auto p-4 space-y-5">
-                    ${timerHtml}
-                    <div class="space-y-4">
-                        ${exercisesHtml}
-                    </div>
-                    <div class="bg-gradient-to-r p-4 rounded-2xl border flex gap-4 items-center ${noteClass}">
-                        <div class="p-2 rounded-full ${noteIconClass}">
-                            <i data-lucide="info" class="w-5 h-5"></i>
-                        </div>
-                        <p class="text-xs font-medium leading-relaxed ${noteTextClass}">
-                            ${noteText}
-                        </p>
-                    </div>
-                </main>
+            /* Nav */
+            const navHTML = workoutData.map((d, i) => {
+                const active = i === activeDay;
+                const gc = GRAD[d.color] || 'g-slate';
+                return `<button class="nav-btn ${active ? 'active' : ''}" onclick="changeDay(${i})">
+                    <span class="nav-icon">${d.icon}</span>
+                    <span class="nav-label">D${i + 1}</span>
+                    ${active ? `<span class="nav-indicator ${gc}"></span>` : ''}
+                </button>`;
+            }).join('');
 
-                <nav class="fixed bottom-4 left-4 right-4 bg-[#121826]/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-1 shadow-2xl z-40 flex overflow-x-auto hide-scrollbar">
-                    ${navHtml}
-                </nav>
-            `;
+            /* Tip */
+            const tipType = w.note ? 'orange' : 'blue';
+            const tipText = w.note || 'Stay 1-3 reps from failure on big lifts. Focus on control, not ego.';
+
+            const html = `
+            <header class="app-header">
+                <div class="header-row">
+                    <div class="header-left">
+                        <div class="day-badge ${gradClass}">${w.icon}</div>
+                        <div>
+                            <div class="workout-title">${w.title}</div>
+                            <div class="workout-focus">${IC.target.replace('stroke="currentColor"','stroke="#60a5fa"')} ${w.focus}</div>
+                        </div>
+                    </div>
+                    <button class="reset-btn" onclick="resetDay()">${IC.reset}</button>
+                </div>
+                <div class="progress-wrap">
+                    <div class="progress-labels">
+                        <span>${IC.activity} Progress</span>
+                        <span>${doneSets} / ${totalSets} Sets</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill ${gradClass}" style="width:${pct}%"></div>
+                    </div>
+                </div>
+            </header>
+
+            <main>
+                ${timerHTML}
+                <div class="exercise-list">${exercisesHTML}</div>
+                <div class="tip-box ${tipType}">
+                    <div class="tip-icon ${tipType}">${IC.info}</div>
+                    <p class="tip-text ${tipType}">${tipText}</p>
+                </div>
+            </main>
+
+            <nav class="bottom-nav">${navHTML}</nav>`;
 
             const scrollY = window.scrollY;
-            document.getElementById('app').innerHTML = appHtml;
-            lucide.createIcons();
+            document.getElementById('app').innerHTML = html;
             window.scrollTo(0, scrollY);
         }
 
-        window.onload = init;
+        window.onload = render;
 
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js');
-            });
+            window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
         }
     </script>
 </body>
