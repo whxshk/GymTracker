@@ -133,6 +133,7 @@
         let activeDay = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
         let completedSets = JSON.parse(localStorage.getItem('gymCompletedSets') || '{}');
         let timeLeft = 0;
+        let totalRestTime = 0;
         let timerInterval = null;
 
         function saveProgress() {
@@ -173,6 +174,7 @@
         function startTimer(seconds) {
             stopTimer();
             timeLeft = seconds;
+            totalRestTime = seconds;
             timerInterval = setInterval(() => {
                 timeLeft--;
                 if (timeLeft <= 0) {
@@ -202,6 +204,11 @@
                 const m = Math.floor(timeLeft / 60);
                 const s = (timeLeft % 60).toString().padStart(2, '0');
                 timerEl.innerText = `${m}:${s}`;
+            }
+            const circle = document.getElementById('timer-circle-progress');
+            if (circle && totalRestTime > 0) {
+                const offset = 138 - (138 * timeLeft / totalRestTime);
+                circle.style.strokeDashoffset = offset;
             }
         }
 
@@ -297,7 +304,11 @@
                 <div id="timer-container" class="bg-[#121826] border border-blue-500/30 rounded-2xl p-4 flex justify-between items-center shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)] sticky top-[100px] z-20 backdrop-blur-md mb-4">
                     <div class="flex items-center gap-4">
                         <div class="relative flex items-center justify-center w-12 h-12">
-                            <i data-lucide="clock" class="w-6 h-6 text-blue-400 animate-pulse relative z-10"></i>
+                            <svg class="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 48 48">
+                                <circle cx="24" cy="24" r="22" stroke="#1e293b" stroke-width="3" fill="transparent"/>
+                                <circle id="timer-circle-progress" cx="24" cy="24" r="22" stroke="#3b82f6" stroke-width="3" fill="transparent" stroke-dasharray="138" stroke-dashoffset="0" style="transition: stroke-dashoffset 1s linear;"/>
+                            </svg>
+                            <i data-lucide="clock" class="w-4 h-4 text-blue-400 animate-pulse relative z-10"></i>
                         </div>
                         <div>
                             <p class="text-[10px] uppercase font-bold text-blue-400 tracking-wider">Recovery Phase</p>
