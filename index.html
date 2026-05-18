@@ -454,6 +454,33 @@
         /* ── Animations ── */
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
         .pulse { animation: pulse 2s cubic-bezier(.4,0,.6,1) infinite; }
+
+        /* ── Desktop centering ── */
+        @media (min-width: 500px) {
+            body {
+                background: #060910;
+            }
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0; bottom: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 460px;
+                background: #0B0F19;
+                border-left: 1px solid rgba(255,255,255,0.05);
+                border-right: 1px solid rgba(255,255,255,0.05);
+                z-index: 0;
+                pointer-events: none;
+            }
+            .app-header, main, #app { position: relative; z-index: 1; }
+            .bottom-nav {
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                width: 444px;
+            }
+        }
     </style>
 </head>
 <body>
