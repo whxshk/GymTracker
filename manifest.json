@@ -1,0 +1,19 @@
+{
+  "name": "Cutting Gym Tracker",
+  "short_name": "Gym Tracker",
+  "description": "Your personal PPL cutting program tracker",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#0B0F19",
+  "theme_color": "#0B0F19",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

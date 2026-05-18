@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cutting Gym Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <meta name="theme-color" content="#0B0F19">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Gym Tracker">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            overscroll-behavior-y: none;
+            background-color: #0B0F19;
+            color: #f1f5f9;
+            padding-bottom: 8rem;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="selection:bg-blue-500/30">
+    <div id="app"></div>
+
+    <script>
+        const workoutData = [
+          {
+            day: "Day 1",
+            title: "Push Heavy",
+            icon: "🦍",
+            focus: "Chest, Shoulders, Triceps",
+            color: "from-orange-500 to-red-600",
+            exercises: [
+              { name: "Incline Chest Press", emoji: "💥", tags: ["Upper Chest", "Compound"], sets: 3, reps: "6–10", rest: 180, weight: "35–55 kg" },
+              { name: "Flat Chest Press", emoji: "🧱", tags: ["Mid Chest", "Compound"], sets: 3, reps: "8–12", rest: 180, weight: "40–65 kg" },
+              { name: "Shoulder Press", emoji: "🥥", tags: ["Front Delts"], sets: 2, reps: "8–12", rest: 180, weight: "25–45 kg" },
+              { name: "Cable Lateral Raise", emoji: "🦅", tags: ["Side Delts"], sets: 3, reps: "12–15", rest: 60, weight: "5–10 kg per arm" },
+              { name: "Overhead Triceps Ext", emoji: "🐴", tags: ["Long Head"], sets: 2, reps: "10–12", rest: 60, weight: "20–35 kg" },
+            ]
+          },
+          {
+            day: "Day 2",
+            title: "Pull Heavy",
+            icon: "🦏",
+            focus: "Back, Biceps, Rear Delts",
+            color: "from-blue-500 to-cyan-600",
+            exercises: [
+              { name: "Lat Pulldown", emoji: "🦇", tags: ["Lats", "Width"], sets: 3, reps: "8–12", rest: 180, weight: "45–70 kg" },
+              { name: "Seated Cable Row", emoji: "🚣", tags: ["Mid Back", "Thickness"], sets: 3, reps: "8–12", rest: 180, weight: "45–70 kg" },
+              { name: "Rear Delt Fly", emoji: "🎯", tags: ["Rear Delts"], sets: 2, reps: "12–15", rest: 90, weight: "25–45 kg" },
+              { name: "Preacher Curl", emoji: "💪", tags: ["Short Head"], sets: 2, reps: "10–12", rest: 60, weight: "20–35 kg" },
+              { name: "Hammer Curl", emoji: "🔨", tags: ["Brachialis"], sets: 2, reps: "10–12", rest: 60, weight: "10–16 kg dumbbells" },
+            ]
+          },
+          {
+            day: "Day 3",
+            title: "Legs Heavy",
+            icon: "🦖",
+            focus: "Quads, Hams, Calves",
+            color: "from-green-500 to-emerald-600",
+            note: "Be careful. At 123 kg, your knees and lower back handle a lot. Full range, controlled reps, no ego lifting.",
+            exercises: [
+              { name: "Hack Squat", emoji: "🏗️", tags: ["Quads", "Compound"], sets: 3, reps: "6–10", rest: 180, weight: "40–80 kg added" },
+              { name: "Leg Press", emoji: "🚂", tags: ["Overall Leg"], sets: 2, reps: "8–12", rest: 180, weight: "120–200 kg" },
+              { name: "Romanian Deadlift", emoji: "hinges", tags: ["Hamstrings", "Glutes"], sets: 3, reps: "8–10", rest: 180, weight: "50–80 kg barbell / 20–32 kg DBs" },
+              { name: "Seated Leg Curl", emoji: "🪝", tags: ["Hamstrings"], sets: 2, reps: "10–12", rest: 90, weight: "35–60 kg" },
+              { name: "Standing Calf Raise", emoji: "🦵", tags: ["Calves"], sets: 3, reps: "12–15", rest: 90, weight: "60–100 kg" },
+            ]
+          },
+          {
+            day: "Day 4",
+            title: "Push Volume",
+            icon: "⚡",
+            focus: "Chest, Shoulders, Triceps",
+            color: "from-purple-500 to-pink-600",
+            exercises: [
+              { name: "Pec Deck", emoji: "🦋", tags: ["Chest Isolation"], sets: 3, reps: "12–15", rest: 90, weight: "35–60 kg" },
+              { name: "Push-ups", emoji: "🔥", tags: ["Burnout"], sets: 2, reps: "1-2 RIR", rest: 90, weight: "Bodyweight (or Incline)" },
+              { name: "Dumbbell Lateral Raise", emoji: "🦅", tags: ["Side Delts"], sets: 3, reps: "12–15", rest: 60, weight: "6–10 kg DBs" },
+              { name: "Cable Lateral Raise", emoji: "🎯", tags: ["Side Delts"], sets: 2, reps: "15", rest: 60, weight: "5–10 kg per arm" },
+              { name: "Triceps Rope Pushdown", emoji: "🐴", tags: ["Triceps"], sets: 3, reps: "10–15", rest: 60, weight: "25–45 kg" },
+            ]
+          },
+          {
+            day: "Day 5",
+            title: "Pull Volume",
+            icon: "🌊",
+            focus: "Back, Biceps, Rear Delts",
+            color: "from-indigo-500 to-blue-600",
+            exercises: [
+              { name: "Chest-Supported Row", emoji: "🛡️", tags: ["Mid Back"], sets: 3, reps: "8–12", rest: 180, weight: "45–75 kg" },
+              { name: "Straight-Arm Pulldown", emoji: "⛷️", tags: ["Lats Isolation"], sets: 3, reps: "12–15", rest: 90, weight: "20–35 kg" },
+              { name: "Face Pull", emoji: "👹", tags: ["Upper Back", "Health"], sets: 3, reps: "12–15", rest: 60, weight: "15–30 kg" },
+              { name: "Dumbbell Curl", emoji: "💪", tags: ["Biceps"], sets: 2, reps: "10–12", rest: 60, weight: "10–16 kg DBs" },
+              { name: "Cable Curl", emoji: "⛓️", tags: ["Constant Tension"], sets: 2, reps: "10–12", rest: 60, weight: "20–35 kg" },
+            ]
+          },
+          {
+            day: "Day 6",
+            title: "Legs Volume",
+            icon: "🔋",
+            focus: "Quads, Hams, Glutes",
+            color: "from-teal-500 to-emerald-600",
+            exercises: [
+              { name: "Leg Extension", emoji: "🦵", tags: ["Quads Isolation"], sets: 3, reps: "12–15", rest: 90, weight: "40–70 kg" },
+              { name: "Seated Leg Curl", emoji: "🪝", tags: ["Hamstrings"], sets: 3, reps: "12–15", rest: 90, weight: "35–60 kg" },
+              { name: "Hip Thrust", emoji: "🍑", tags: ["Glutes"], sets: 3, reps: "8–12", rest: 180, weight: "70–120 kg" },
+              { name: "Adductor Machine", emoji: "🗜️", tags: ["Inner Thigh"], sets: 2, reps: "12–15", rest: 90, weight: "35–65 kg" },
+              { name: "Abductor Machine", emoji: "🛸", tags: ["Outer Glute"], sets: 2, reps: "12–15", rest: 90, weight: "35–65 kg" },
+              { name: "Seated Calf Raise", emoji: "👟", tags: ["Soleus"], sets: 3, reps: "12–15", rest: 90, weight: "35–70 kg" },
+            ]
+          },
+          {
+            day: "Day 7",
+            title: "Full Rest",
+            icon: "🧘‍♂️",
+            focus: "Recovery",
+            color: "from-slate-500 to-slate-700",
+            isRest: true,
+            exercises: [
+              { name: "Walking (Low Intensity)", emoji: "🚶‍♂️", tags: ["Active Recovery"], sets: 1, reps: "30–60 mins", rest: 0, weight: "Bodyweight" },
+              { name: "Nutrition Check", emoji: "🥗", tags: ["Diet"], sets: 1, reps: "Deficit", rest: 0, weight: "N/A" }
+            ]
+          }
+        ];
+
+        let activeDay = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+        let completedSets = JSON.parse(localStorage.getItem('gymCompletedSets') || '{}');
+        let timeLeft = 0;
+        let timerInterval = null;
+
+        function saveProgress() {
+            localStorage.setItem('gymCompletedSets', JSON.stringify(completedSets));
+        }
+
+        function init() {
+            renderApp();
+        }
+
+        function toggleSet(exIdx, setIdx, rest) {
+            const key = `${activeDay}-${exIdx}-${setIdx}`;
+            completedSets[key] = !completedSets[key];
+            saveProgress();
+
+            if (completedSets[key] && rest > 0) {
+                startTimer(rest);
+            }
+            renderApp();
+        }
+
+        function resetDay() {
+            Object.keys(completedSets).forEach(key => {
+                if (key.startsWith(`${activeDay}-`)) {
+                    delete completedSets[key];
+                }
+            });
+            saveProgress();
+            stopTimer();
+            renderApp();
+        }
+
+        function changeDay(idx) {
+            activeDay = idx;
+            renderApp();
+        }
+
+        function startTimer(seconds) {
+            stopTimer();
+            timeLeft = seconds;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    stopTimer();
+                } else {
+                    renderTimerText();
+                }
+            }, 1000);
+            renderApp();
+        }
+
+        function stopTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = null;
+            timeLeft = 0;
+            const container = document.getElementById('timer-container');
+            if (container) container.style.display = 'none';
+        }
+
+        function skipTimer() {
+            stopTimer();
+        }
+
+        function renderTimerText() {
+            const timerEl = document.getElementById('timer-text');
+            if (timerEl && timeLeft > 0) {
+                const m = Math.floor(timeLeft / 60);
+                const s = (timeLeft % 60).toString().padStart(2, '0');
+                timerEl.innerText = `${m}:${s}`;
+            }
+        }
+
+        function renderApp() {
+            const currentWorkout = workoutData[activeDay];
+            const totalSets = currentWorkout.exercises?.reduce((acc, ex) => acc + ex.sets, 0) || 0;
+            const completedSetsCount = Object.keys(completedSets).filter(k => k.startsWith(`${activeDay}-`) && completedSets[k]).length;
+            const progressPercent = totalSets === 0 ? 100 : Math.round((completedSetsCount / totalSets) * 100);
+
+            let exercisesHtml = '';
+            if (currentWorkout.exercises) {
+                currentWorkout.exercises.forEach((ex, exIdx) => {
+                    const isAllDone = ex.sets > 0 && Array.from({length: ex.sets}).every((_, i) => completedSets[`${activeDay}-${exIdx}-${i}`]);
+
+                    let tagsHtml = (ex.tags || []).map(tag => `<span class="px-2 py-0.5 bg-white/5 rounded-md text-[9px] font-bold text-slate-400 uppercase tracking-wide border border-white/5">${tag}</span>`).join('');
+
+                    let setsHtml = '';
+                    for(let setIdx=0; setIdx<ex.sets; setIdx++) {
+                        const isDone = completedSets[`${activeDay}-${exIdx}-${setIdx}`];
+                        const btnClass = isDone
+                            ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-lg shadow-emerald-500/20 scale-[0.98]'
+                            : 'bg-[#1C2436] text-slate-500 border border-white/5';
+
+                        const content = isDone ? `<i data-lucide="check-circle-2" class="w-6 h-6 stroke-[3]"></i>` : (setIdx + 1);
+
+                        setsHtml += `
+                            <button onclick="toggleSet(${exIdx}, ${setIdx}, ${ex.rest})" class="flex-1 min-w-[3rem] h-14 rounded-2xl flex items-center justify-center font-black text-lg transition-all duration-300 ${btnClass}">
+                                ${content}
+                            </button>
+                        `;
+                    }
+
+                    exercisesHtml += `
+                    <div class="bg-[#121826] rounded-3xl border transition-all duration-300 overflow-hidden mb-4 ${isAllDone ? 'border-emerald-500/30 shadow-[0_0_20px_-10px_rgba(16,185,129,0.2)]' : 'border-white/5'}">
+                        <div class="p-5 border-b border-white/5 relative overflow-hidden">
+                            <div class="absolute -right-4 -top-4 text-7xl opacity-5 pointer-events-none grayscale">${ex.emoji}</div>
+                            <div class="flex gap-4 mb-3 relative z-10">
+                                <div class="relative shrink-0">
+                                    <img src="https://picsum.photos/seed/${ex.name.replace(/\s/g, '')}/150/150?grayscale" alt="${ex.name}" class="w-16 h-16 rounded-2xl object-cover border border-white/10 shadow-lg shadow-black/50" onerror="this.style.display='none'">
+                                    <span class="absolute -bottom-2 -right-2 text-lg drop-shadow-md bg-[#121826] rounded-full p-1 border border-white/10">${ex.emoji}</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg text-white leading-tight">${ex.name}</h3>
+                                    <div class="flex flex-wrap gap-1.5 mt-2">${tagsHtml}</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 mt-4 bg-black/20 p-2.5 rounded-xl border border-white/5 relative z-10">
+                                <div class="flex-1 flex flex-col items-center border-r border-white/10">
+                                    <span class="text-[9px] text-slate-500 uppercase font-bold tracking-widest mb-1">Target</span>
+                                    <span class="text-sm font-bold text-white flex items-center gap-1"><i data-lucide="flame" class="w-3 h-3 text-orange-500"></i> ${ex.reps}</span>
+                                </div>
+                                <div class="flex-1 flex flex-col items-center border-r border-white/10">
+                                    <span class="text-[9px] text-slate-500 uppercase font-bold tracking-widest mb-1">Volume</span>
+                                    <span class="text-sm font-bold text-white flex items-center gap-1"><i data-lucide="dumbbell" class="w-3 h-3 text-blue-400"></i> ${ex.sets} Sets</span>
+                                </div>
+                                <div class="flex-1 flex flex-col items-center">
+                                    <span class="text-[9px] text-slate-500 uppercase font-bold tracking-widest mb-1">Rest</span>
+                                    <span class="text-sm font-bold text-white flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3 text-emerald-400"></i> ${ex.rest}s</span>
+                                </div>
+                            </div>
+                            <div class="mt-2 bg-blue-500/10 p-2.5 rounded-xl border border-blue-500/20 text-center relative z-10">
+                                <span class="text-[9px] text-blue-400 uppercase font-bold tracking-widest block mb-0.5">Starting Weight</span>
+                                <span class="text-sm font-bold text-blue-100">${ex.weight}</span>
+                            </div>
+                        </div>
+                        <div class="p-5 bg-gradient-to-b from-transparent to-black/10 relative z-10">
+                            <div class="flex flex-wrap gap-3">
+                                ${setsHtml}
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                });
+            }
+
+            let navHtml = '';
+            workoutData.forEach((day, idx) => {
+                const isActive = activeDay === idx;
+                navHtml += `
+                <button onclick="changeDay(${idx})" class="flex flex-col items-center min-w-[60px] flex-1 py-3 rounded-2xl transition-all duration-300 relative ${isActive ? 'bg-white/10 text-white' : 'text-slate-500 hover:bg-white/5'}">
+                    <span class="text-xl transition-transform duration-300 ${isActive ? 'scale-125 mb-1' : 'scale-100 mb-0.5'}">${day.icon}</span>
+                    <span class="text-[9px] font-black tracking-widest uppercase transition-opacity ${isActive ? 'opacity-100' : 'opacity-70'}">D${idx + 1}</span>
+                    ${isActive ? `<div class="absolute bottom-0 w-8 h-1 rounded-t-full bg-gradient-to-r ${day.color}"></div>` : ''}
+                </button>
+                `;
+            });
+
+            let timerHtml = '';
+            if (timeLeft > 0) {
+                const m = Math.floor(timeLeft / 60);
+                const s = (timeLeft % 60).toString().padStart(2, '0');
+                timerHtml = `
+                <div id="timer-container" class="bg-[#121826] border border-blue-500/30 rounded-2xl p-4 flex justify-between items-center shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)] sticky top-[100px] z-20 backdrop-blur-md mb-4">
+                    <div class="flex items-center gap-4">
+                        <div class="relative flex items-center justify-center w-12 h-12">
+                            <i data-lucide="clock" class="w-6 h-6 text-blue-400 animate-pulse relative z-10"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] uppercase font-bold text-blue-400 tracking-wider">Recovery Phase</p>
+                            <p id="timer-text" class="text-3xl font-black font-mono leading-none tracking-tighter text-white">${m}:${s}</p>
+                        </div>
+                    </div>
+                    <button onclick="skipTimer()" class="bg-blue-500/10 text-blue-400 px-5 py-2.5 rounded-xl text-xs font-bold border border-blue-500/20 active:bg-blue-500/20 transition-colors uppercase tracking-wider">Skip</button>
+                </div>
+                `;
+            }
+
+            const noteClass = currentWorkout.note ? 'from-orange-900/20 to-red-900/20 border-orange-500/20' : 'from-blue-900/20 to-purple-900/20 border-blue-500/20';
+            const noteIconClass = currentWorkout.note ? 'bg-orange-500/20 text-orange-400' : 'bg-blue-500/20 text-blue-400';
+            const noteTextClass = currentWorkout.note ? 'text-orange-100/80' : 'text-blue-100/70';
+            const noteText = currentWorkout.note || "Stay 1-3 reps from failure on big lifts. Focus on control, not ego.";
+
+            const appHtml = `
+                <header class="sticky top-0 z-30 bg-[#0B0F19]/90 backdrop-blur-xl border-b border-white/5 p-4 shadow-2xl">
+                    <div class="flex justify-between items-center max-w-md mx-auto">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-xl bg-gradient-to-br ${currentWorkout.color} shadow-lg flex items-center justify-center text-2xl">
+                                ${currentWorkout.icon}
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-black italic tracking-tight text-white uppercase flex items-center gap-2">
+                                    ${currentWorkout.title}
+                               </h1>
+                                <p class="text-[10px] text-slate-400 font-bold tracking-widest uppercase flex items-center gap-1">
+                                    <i data-lucide="target" class="w-3 h-3 text-blue-400"></i> ${currentWorkout.focus}
+                                </p>
+                            </div>
+                        </div>
+                        <button onclick="resetDay()" class="h-10 w-10 flex items-center justify-center bg-white/5 rounded-full text-slate-400 active:scale-90 transition-all border border-white/10 hover:bg-white/10">
+                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="max-w-md mx-auto mt-4">
+                        <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1.5 px-1 uppercase tracking-wider">
+                            <span class="flex items-center gap-1"><i data-lucide="activity" class="w-3 h-3"></i> Progress</span>
+                            <span>${completedSetsCount} / ${totalSets} Sets</span>
+                        </div>
+                        <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r ${currentWorkout.color} transition-all duration-500 ease-out" style="width: ${progressPercent}%"></div>
+                        </div>
+                    </div>
+                </header>
+
+                <main class="max-w-md mx-auto p-4 space-y-5">
+                    ${timerHtml}
+                    <div class="space-y-4">
+                        ${exercisesHtml}
+                    </div>
+                    <div class="bg-gradient-to-r p-4 rounded-2xl border flex gap-4 items-center ${noteClass}">
+                        <div class="p-2 rounded-full ${noteIconClass}">
+                            <i data-lucide="info" class="w-5 h-5"></i>
+                        </div>
+                        <p class="text-xs font-medium leading-relaxed ${noteTextClass}">
+                            ${noteText}
+                        </p>
+                    </div>
+                </main>
+
+                <nav class="fixed bottom-4 left-4 right-4 bg-[#121826]/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-1 shadow-2xl z-40 flex overflow-x-auto hide-scrollbar">
+                    ${navHtml}
+                </nav>
+            `;
+
+            const scrollY = window.scrollY;
+            document.getElementById('app').innerHTML = appHtml;
+            lucide.createIcons();
+            window.scrollTo(0, scrollY);
+        }
+
+        window.onload = init;
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js');
+            });
+        }
+    </script>
+</body>
+</html>
