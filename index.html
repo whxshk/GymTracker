@@ -481,6 +481,165 @@
                 width: 444px;
             }
         }
+
+        /* ── Profile Button ── */
+        @keyframes profilePulse {
+            0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.5), 0 8px 32px -6px rgba(99,102,241,0.5); }
+            50%      { box-shadow: 0 0 0 6px rgba(99,102,241,0),  0 8px 32px -6px rgba(99,102,241,0.6); }
+        }
+        .profile-btn {
+            display: flex; align-items: center; justify-content: center; gap: 0.625rem;
+            width: 100%;
+            padding: 1.1rem 1.5rem;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 1rem;
+            color: #fff;
+            font-size: 1rem; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            cursor: pointer; transition: all 0.2s;
+            margin-top: 1rem; font-family: inherit;
+            animation: profilePulse 2.8s ease-in-out infinite;
+        }
+        .profile-btn:hover {
+            background: linear-gradient(135deg, #4f46e5, #9333ea);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px -6px rgba(99,102,241,0.6);
+            animation: none;
+        }
+        .profile-btn:active { transform: scale(0.97); box-shadow: none; animation: none; }
+        .profile-btn-icon { font-size: 1.25rem; line-height: 1; }
+
+        /* ── Calendar Overlay ── */
+        .cal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(6,9,16,0.85);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            z-index: 50; overflow-y: auto;
+            padding: 1rem; padding-bottom: 7rem;
+        }
+        .cal-panel {
+            max-width: 448px; margin: 0 auto;
+            background: #0f1623;
+            border-radius: 1.5rem; border: 1px solid rgba(255,255,255,0.07);
+            overflow: hidden; box-shadow: 0 30px 70px -15px rgba(0,0,0,0.9);
+        }
+        .cal-top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.02);
+        }
+        .cal-panel-title { font-size: 1.125rem; font-weight: 900; color: #fff; font-style: italic; text-transform: uppercase; letter-spacing: -0.02em; }
+        .cal-panel-sub   { font-size: 10px; color: #475569; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 3px; }
+        .cal-close {
+            width: 2rem; height: 2rem;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 50%; color: #94a3b8; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.875rem; font-weight: 700; transition: all 0.2s;
+            flex-shrink: 0; font-family: inherit;
+        }
+        .cal-close:hover { background: rgba(239,68,68,0.15); color: #f87171; border-color: rgba(239,68,68,0.2); }
+
+        /* Analytics */
+        .analytics-bar {
+            display: grid; grid-template-columns: repeat(4,1fr);
+            background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .analytics-stat { padding: 1rem 0.5rem; text-align: center; border-right: 1px solid rgba(255,255,255,0.05); }
+        .analytics-stat:last-child { border-right: none; }
+        .analytics-val { font-size: 1.375rem; font-weight: 900; color: #fff; line-height: 1; margin-bottom: 5px; font-family: monospace; letter-spacing: -0.04em; }
+        .analytics-lbl { font-size: 8px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; }
+        .av-green { color: #34d399; } .av-blue { color: #60a5fa; } .av-amber { color: #fb923c; } .av-red { color: #f87171; }
+
+        /* Month Nav */
+        .month-nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem 0.625rem; }
+        .month-label { font-size: 0.875rem; font-weight: 800; color: #e2e8f0; }
+        .month-arrow {
+            width: 2rem; height: 2rem;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 0.5rem; color: #94a3b8; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; font-size: 1.125rem; font-weight: 700; font-family: inherit;
+        }
+        .month-arrow:hover:not([disabled]) { background: rgba(255,255,255,0.1); color: #fff; }
+        .month-arrow[disabled] { opacity: 0.25; cursor: default; }
+
+        /* Grid */
+        .cal-grid-wrap { padding: 0 1rem 0.75rem; }
+        .cal-weekdays { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; margin-bottom: 4px; }
+        .cal-weekday { text-align: center; font-size: 9px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 0; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+        .cal-cell {
+            aspect-ratio: 1; border-radius: 0.5rem;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 0.7rem; font-weight: 700; cursor: pointer;
+            border: 1px solid transparent; transition: all 0.15s;
+            gap: 1px; line-height: 1; user-select: none;
+        }
+        .cal-cell.empty   { visibility: hidden; pointer-events: none; }
+        .cal-cell.future  { color: #1e293b; pointer-events: none; }
+        .cal-cell.completed { background: rgba(16,185,129,0.1);  border-color: rgba(16,185,129,0.2);  color: #34d399; }
+        .cal-cell.completed:hover { background: rgba(16,185,129,0.18); border-color: rgba(16,185,129,0.35); }
+        .cal-cell.skipped   { background: rgba(239,68,68,0.08);   border-color: rgba(239,68,68,0.18);   color: #f87171; }
+        .cal-cell.skipped:hover { background: rgba(239,68,68,0.15); }
+        .cal-cell.rest      { background: rgba(100,116,139,0.08); border-color: rgba(100,116,139,0.15); color: #64748b; }
+        .cal-cell.rest:hover { background: rgba(100,116,139,0.15); }
+        .cal-cell.nodata    { color: #334155; background: rgba(255,255,255,0.015); }
+        .cal-cell.nodata:hover { background: rgba(255,255,255,0.04); color: #475569; }
+        .cal-cell.today { background: rgba(99,102,241,0.3) !important; border-color: #6366f1 !important; color: #c4b5fd !important; font-weight: 900; }
+        .cal-cell.selected { box-shadow: 0 0 0 2.5px #fff !important; }
+        .cal-cell-icon { font-size: 0.55rem; line-height: 1; }
+        .cal-cell.nodata .cal-cell-icon { color: #2d3a4a; font-size: 0.6rem; }
+        .detail-pip { cursor: pointer; transition: opacity 0.15s, transform 0.15s; }
+        .detail-pip:hover { opacity: 0.7; transform: scale(0.88); }
+        /* Status Dropdown */
+        .status-dropdown-wrap { position: relative; flex-shrink: 0; }
+        .status-dropdown {
+            position: absolute; right: 0; top: calc(100% + 6px);
+            background: #1a2436; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0.75rem; overflow: hidden; z-index: 200;
+            min-width: 158px; box-shadow: 0 12px 32px -5px rgba(0,0,0,0.75);
+        }
+        .status-opt {
+            display: flex; align-items: center; gap: 0.625rem;
+            padding: 0.625rem 1rem; font-size: 0.8rem; font-weight: 700;
+            cursor: pointer; transition: background 0.15s; color: #e2e8f0;
+            font-family: inherit; border: none; background: none; width: 100%; text-align: left;
+        }
+        .status-opt:hover { background: rgba(255,255,255,0.07); }
+        .status-opt + .status-opt { border-top: 1px solid rgba(255,255,255,0.05); }
+        .detail-badge { cursor: pointer; user-select: none; display: inline-flex; align-items: center; gap: 5px; }
+        .detail-badge:hover { filter: brightness(1.2); }
+
+        /* Legend */
+        .cal-legend { display: flex; justify-content: center; gap: 1.25rem; padding: 0.625rem 1rem 1rem; border-top: 1px solid rgba(255,255,255,0.04); }
+        .legend-item { display: flex; align-items: center; gap: 0.375rem; font-size: 9px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; }
+        .legend-swatch { width: 10px; height: 10px; border-radius: 3px; border: 1px solid; }
+        .legend-swatch.completed { background: rgba(16,185,129,0.2);  border-color: rgba(16,185,129,0.4); }
+        .legend-swatch.skipped   { background: rgba(239,68,68,0.15);  border-color: rgba(239,68,68,0.35); }
+        .legend-swatch.rest      { background: rgba(100,116,139,0.15); border-color: rgba(100,116,139,0.3); }
+
+        /* Detail Sheet */
+        .detail-sheet { margin: 0 1rem 1rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.07); border-radius: 1rem; overflow: hidden; }
+        .detail-header { padding: 0.75rem 1rem; background: rgba(255,255,255,0.025); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; }
+        .detail-date-str { font-size: 0.75rem; font-weight: 700; color: #e2e8f0; }
+        .detail-workout-name { font-size: 10px; color: #475569; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .detail-badge { padding: 3px 10px; border-radius: 6px; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; flex-shrink: 0; }
+        .detail-badge.completed { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
+        .detail-badge.skipped   { background: rgba(239,68,68,0.1);    color: #f87171; border: 1px solid rgba(239,68,68,0.18); }
+        .detail-badge.rest      { background: rgba(100,116,139,0.1);  color: #94a3b8; border: 1px solid rgba(100,116,139,0.18); }
+        .detail-ex-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .detail-ex-row:last-child { border-bottom: none; }
+        .detail-ex-name { font-size: 0.8rem; font-weight: 600; color: #cbd5e1; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .detail-ex-sets { display: flex; gap: 3px; flex-shrink: 0; }
+        .detail-pip { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; }
+        .detail-pip.done { background: rgba(16,185,129,0.18); color: #34d399; }
+        .detail-pip.miss { background: rgba(255,255,255,0.04); color: #334155; }
+        .detail-ex-weight { font-size: 9px; font-weight: 700; color: #60a5fa; white-space: nowrap; flex-shrink: 0; }
+        .detail-footer { display: flex; justify-content: space-between; align-items: center; padding: 0.625rem 1rem; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.04); }
+        .detail-footer-lbl { font-size: 9px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; }
+        .detail-footer-val { font-size: 0.75rem; font-weight: 700; color: #94a3b8; }
     </style>
 </head>
 <body>
@@ -577,6 +736,258 @@
         let totalRestTime = 0;
         let timerInterval = null;
 
+        /* ── Profile Calendar State ── */
+        let showProfileCalendar = false;
+        let calendarViewDate = new Date();
+        let selectedCalendarDate = null;
+        let statusDropdownKey    = null;
+
+        /* ── History helpers ── */
+        function dateKey(d) {
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+        function getHistory() {
+            return JSON.parse(localStorage.getItem('gymHistory') || '{}');
+        }
+        function saveHistoryEntry() {
+            const key = dateKey(new Date());
+            const w = workoutData[activeDay];
+            const total = w.exercises.reduce((a, ex) => a + ex.sets, 0);
+            const done  = Object.keys(completedSets).filter(k => k.startsWith(`${activeDay}-`) && completedSets[k]).length;
+            const status = w.isRest ? 'rest' : (done > 0 ? 'completed' : null);
+            if (!status) return;
+            const details = w.exercises.map((ex, ei) => ({
+                name: ex.name, emoji: ex.emoji, sets: ex.sets, weight: ex.weight,
+                doneSets: [...Array(ex.sets)].filter((_, si) => completedSets[`${activeDay}-${ei}-${si}`]).length
+            }));
+            const hist = getHistory();
+            hist[key] = { status, completedSets: done, totalSets: total, workoutDay: activeDay, workoutTitle: w.title, workoutDetails: details };
+            localStorage.setItem('gymHistory', JSON.stringify(hist));
+        }
+        function seedDemoHistory() {
+            if (localStorage.getItem('gymHistorySeeded')) return;
+            const hist = getHistory();
+            const today = new Date();
+            const pattern = ['completed','rest','completed','completed','skipped','completed','rest',
+                             'completed','completed','rest','skipped','completed','completed','completed'];
+            for (let i = pattern.length; i >= 1; i--) {
+                const d = new Date(today); d.setDate(d.getDate() - i);
+                const k = dateKey(d);
+                const wIdx = (d.getDay() + 6) % 7;
+                const w = workoutData[wIdx];
+                const rawSt = pattern[pattern.length - i];
+                const status = w.isRest ? 'rest' : rawSt;
+                const total  = w.exercises.reduce((a, e) => a + e.sets, 0);
+                const done   = status === 'completed' ? total : 0;
+                hist[k] = {
+                    status, completedSets: done, totalSets: total,
+                    workoutDay: wIdx, workoutTitle: w.title,
+                    workoutDetails: w.exercises.map(ex => ({
+                        name: ex.name, emoji: ex.emoji, sets: ex.sets, weight: ex.weight,
+                        doneSets: status === 'completed' ? ex.sets : 0
+                    }))
+                };
+            }
+            localStorage.setItem('gymHistory', JSON.stringify(hist));
+            localStorage.setItem('gymHistorySeeded', '1');
+        }
+        function calcMonthStats(year, month) {
+            const hist  = getHistory();
+            const today = new Date();
+            let completed = 0, skipped = 0, rest = 0;
+            const days = new Date(year, month + 1, 0).getDate();
+            for (let d = 1; d <= days; d++) {
+                const dt = new Date(year, month, d);
+                if (dt > today) break;
+                const e = hist[`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`];
+                if (!e) continue;
+                if (e.status === 'completed') completed++;
+                else if (e.status === 'skipped') skipped++;
+                else if (e.status === 'rest')    rest++;
+            }
+            const consistency = (completed + skipped) > 0 ? Math.round(completed / (completed + skipped) * 100) : 0;
+            let streak = 0;
+            const chk = new Date();
+            const todayE = hist[dateKey(chk)];
+            if (!todayE || (todayE.status !== 'completed' && todayE.status !== 'rest')) {
+                chk.setDate(chk.getDate() - 1); // today not logged yet — count back from yesterday
+            }
+            for (let i = 0; i < 365; i++) {
+                const e = hist[dateKey(chk)];
+                if (!e || (e.status !== 'completed' && e.status !== 'rest')) break;
+                streak++; chk.setDate(chk.getDate() - 1);
+            }
+            return { completed, skipped, rest, consistency, streak };
+        }
+
+        /* ── Calendar interaction ── */
+        function toggleProfileCalendar() { showProfileCalendar = !showProfileCalendar; render(); }
+        function closeProfileCalendar()  { showProfileCalendar = false; selectedCalendarDate = null; render(); }
+        function navCalendar(dir) {
+            calendarViewDate = new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + dir, 1);
+            render();
+        }
+        function selectCalDate(key) {
+            selectedCalendarDate = selectedCalendarDate === key ? null : key;
+            statusDropdownKey = null;
+            render();
+        }
+        function openStatusDropdown(k, e) {
+            e.stopPropagation();
+            statusDropdownKey = statusDropdownKey === k ? null : k;
+            render();
+        }
+        function setHistoryStatus(k, newStatus, e) {
+            e.stopPropagation();
+            const hist = getHistory();
+            if (!hist[k]) return;
+            hist[k].status = newStatus;
+            if (newStatus === 'skipped') {
+                hist[k].completedSets = 0;
+                (hist[k].workoutDetails || []).forEach(ex => { ex.doneSets = 0; ex.doneSetsArr = Array(ex.sets).fill(false); });
+            }
+            localStorage.setItem('gymHistory', JSON.stringify(hist));
+            statusDropdownKey = null;
+            render();
+        }
+        function toggleHistorySet(k, exIdx, setIdx) {
+            const hist = getHistory();
+            if (!hist[k] || !hist[k].workoutDetails) return;
+            const ex = hist[k].workoutDetails[exIdx];
+            if (!ex) return;
+            if (!ex.doneSetsArr) ex.doneSetsArr = [...Array(ex.sets)].map((_, i) => i < (ex.doneSets || 0));
+            ex.doneSetsArr[setIdx] = !ex.doneSetsArr[setIdx];
+            ex.doneSets = ex.doneSetsArr.filter(Boolean).length;
+            const totalDone = hist[k].workoutDetails.reduce((a, d) => a + (d.doneSets || 0), 0);
+            hist[k].completedSets = totalDone;
+            if (hist[k].status !== 'rest') hist[k].status = totalDone > 0 ? 'completed' : 'skipped';
+            localStorage.setItem('gymHistory', JSON.stringify(hist));
+            render();
+        }
+
+        /* ── Calendar renderer ── */
+        function renderProfileCalendar() {
+            const hist  = getHistory();
+            const today = new Date();
+            const year  = calendarViewDate.getFullYear();
+            const month = calendarViewDate.getMonth();
+            const stats = calcMonthStats(year, month);
+            const todayK = dateKey(today);
+            const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
+            const oldestAllowed  = new Date(today.getFullYear() - 1, today.getMonth(), 1);
+            const isPrevDisabled = new Date(year, month, 1) <= oldestAllowed;
+            const MONTHS   = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            const WEEKDAYS = ['M','T','W','T','F','S','S'];
+            const firstDow = new Date(year, month, 1).getDay();
+            const startOff = firstDow === 0 ? 6 : firstDow - 1;
+            const daysInMo = new Date(year, month + 1, 0).getDate();
+
+            let cells = '';
+            for (let i = 0; i < startOff; i++) cells += `<div class="cal-cell empty"></div>`;
+            for (let d = 1; d <= daysInMo; d++) {
+                const k   = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const dt  = new Date(year, month, d);
+                const fut = dt > today;
+                const isT = k === todayK;
+                const ent = hist[k];
+                const st  = ent ? ent.status : null;
+                let cls   = 'cal-cell';
+                let icon  = '';
+                if (fut) {
+                    cls += ' future';
+                } else if (st === 'completed') { cls += ' completed'; icon = `<span class="cal-cell-icon">✓</span>`; }
+                  else if (st === 'skipped')   { cls += ' skipped';   icon = `<span class="cal-cell-icon">✕</span>`; }
+                  else if (st === 'rest')       { cls += ' rest';      icon = `<span class="cal-cell-icon">💤</span>`; }
+                  else                          { cls += ' nodata';    icon = `<span class="cal-cell-icon">—</span>`; }
+                if (isT) cls += ' today';
+                if (selectedCalendarDate === k) cls += ' selected';
+                const fn = fut ? '' : `onclick="selectCalDate('${k}')"`;
+                cells += `<div class="${cls}" ${fn}><span>${d}</span>${icon}</div>`;
+            }
+
+            let detailHTML = '';
+            if (selectedCalendarDate && hist[selectedCalendarDate]) {
+                const ent = hist[selectedCalendarDate];
+                const [y2, m2, d2] = selectedCalendarDate.split('-').map(Number);
+                const dStr = new Date(y2, m2-1, d2).toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });
+                let exRows = '';
+                if (ent.status === 'rest') {
+                    exRows = `<div class="detail-ex-row"><span class="detail-ex-name" style="color:#64748b">💤 Rest day — active recovery only</span></div>`;
+                } else {
+                    exRows = (ent.workoutDetails || []).map((ex, ei) => {
+                        const arr = ex.doneSetsArr || [...Array(ex.sets)].map((_, i) => i < (ex.doneSets||0));
+                        const pips = arr.map((done, si) =>
+                            `<span class="detail-pip ${done?'done':'miss'}" onclick="toggleHistorySet('${selectedCalendarDate}',${ei},${si})">${done?'✓':'·'}</span>`
+                        ).join('');
+                        return `<div class="detail-ex-row">
+                            <span class="detail-ex-name">${ex.emoji} ${ex.name}</span>
+                            <div class="detail-ex-sets">${pips}</div>
+                            <span class="detail-ex-weight">${ex.weight}</span>
+                        </div>`;
+                    }).join('');
+                }
+                detailHTML = `
+                <div class="detail-sheet">
+                    <div class="detail-header">
+                        <div>
+                            <div class="detail-date-str">${dStr}</div>
+                            <div class="detail-workout-name">${ent.workoutTitle || 'Workout'}</div>
+                        </div>
+                        <div class="status-dropdown-wrap">
+                            <button class="detail-badge ${ent.status}" onclick="openStatusDropdown('${selectedCalendarDate}',event)">
+                                ${ent.status} ▾
+                            </button>
+                            ${statusDropdownKey === selectedCalendarDate ? `
+                            <div class="status-dropdown" onclick="event.stopPropagation()">
+                                <button class="status-opt" onclick="setHistoryStatus('${selectedCalendarDate}','completed',event)"><span style="color:#34d399">✓</span> Completed</button>
+                                <button class="status-opt" onclick="setHistoryStatus('${selectedCalendarDate}','skipped',event)"><span style="color:#f87171">✕</span> Skipped</button>
+                                <button class="status-opt" onclick="setHistoryStatus('${selectedCalendarDate}','rest',event)"><span>💤</span> Rest Day</button>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                    ${exRows}
+                    ${ent.status !== 'rest' ? `<div class="detail-footer">
+                        <span class="detail-footer-lbl">Sets Completed</span>
+                        <span class="detail-footer-val">${ent.completedSets} / ${ent.totalSets}</span>
+                    </div>` : ''}
+                </div>`;
+            }
+
+            return `
+            <div class="cal-overlay" onclick="if(event.target===this)closeProfileCalendar()">
+                <div class="cal-panel">
+                    <div class="cal-top-bar">
+                        <div>
+                            <div class="cal-panel-title">📊 Workout History</div>
+                            <div class="cal-panel-sub">Tap any date to inspect</div>
+                        </div>
+                        <button class="cal-close" onclick="closeProfileCalendar()">✕</button>
+                    </div>
+                    <div class="analytics-bar">
+                        <div class="analytics-stat"><div class="analytics-val av-green">${stats.completed}</div><div class="analytics-lbl">Done</div></div>
+                        <div class="analytics-stat"><div class="analytics-val av-blue">${stats.consistency}%</div><div class="analytics-lbl">Consistency</div></div>
+                        <div class="analytics-stat"><div class="analytics-val av-amber">${stats.streak}</div><div class="analytics-lbl">🔥 Streak</div></div>
+                        <div class="analytics-stat"><div class="analytics-val av-red">${stats.skipped}</div><div class="analytics-lbl">Skipped</div></div>
+                    </div>
+                    <div class="month-nav">
+                        <button class="month-arrow" onclick="navCalendar(-1)" ${isPrevDisabled ? 'disabled' : ''}>&#8249;</button>
+                        <span class="month-label">${MONTHS[month]} ${year}</span>
+                        <button class="month-arrow" onclick="navCalendar(1)">&#8250;</button>
+                    </div>
+                    <div class="cal-grid-wrap">
+                        <div class="cal-weekdays">${WEEKDAYS.map(d=>`<div class="cal-weekday">${d}</div>`).join('')}</div>
+                        <div class="cal-grid">${cells}</div>
+                    </div>
+                    <div class="cal-legend">
+                        <div class="legend-item"><div class="legend-swatch completed"></div>Done</div>
+                        <div class="legend-item"><div class="legend-swatch skipped"></div>Skipped</div>
+                        <div class="legend-item"><div class="legend-swatch rest"></div>Rest</div>
+                    </div>
+                    ${detailHTML}
+                </div>
+            </div>`;
+        }
+
         function save() {
             localStorage.setItem('gymCompletedSets', JSON.stringify(completedSets));
         }
@@ -585,6 +996,7 @@
             const key = `${activeDay}-${exIdx}-${setIdx}`;
             completedSets[key] = !completedSets[key];
             save();
+            saveHistoryEntry();
             if (completedSets[key] && rest > 0) startTimer(rest);
             render();
         }
@@ -760,16 +1172,20 @@
                     <div class="tip-icon ${tipType}">${IC.info}</div>
                     <p class="tip-text ${tipType}">${tipText}</p>
                 </div>
+                <button class="profile-btn" onclick="toggleProfileCalendar()">
+                    <span class="profile-btn-icon">📊</span> Check Profile
+                </button>
             </main>
 
-            <nav class="bottom-nav">${navHTML}</nav>`;
+            <nav class="bottom-nav">${navHTML}</nav>
+            ${showProfileCalendar ? renderProfileCalendar() : ''}`;
 
             const scrollY = window.scrollY;
             document.getElementById('app').innerHTML = html;
             window.scrollTo(0, scrollY);
         }
 
-        window.onload = render;
+        window.onload = () => { seedDemoHistory(); render(); };
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
