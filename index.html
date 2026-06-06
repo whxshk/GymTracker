@@ -327,7 +327,15 @@
             display: block;
             margin-bottom: 2px;
         }
-        .weight-val { font-size: 0.875rem; font-weight: 700; color: #bfdbfe; }
+        .weight-val { font-size: 0.875rem; font-weight: 700; color: #bfdbfe; cursor: pointer; }
+        .weight-edit { font-size: 11px; opacity: 0.5; margin-left: 4px; }
+        .weight-val:hover .weight-edit { opacity: 1; }
+        .weight-input {
+            width: 100%; text-align: center;
+            background: rgba(0,0,0,0.35); border: 1px solid rgba(59,130,246,0.6);
+            border-radius: 0.5rem; color: #fff; font-size: 0.875rem; font-weight: 700;
+            padding: 5px 6px; font-family: inherit; outline: none;
+        }
 
         /* ── Set buttons ── */
         .sets-area {
@@ -636,7 +644,14 @@
         .detail-pip { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; }
         .detail-pip.done { background: rgba(16,185,129,0.18); color: #34d399; }
         .detail-pip.miss { background: rgba(255,255,255,0.04); color: #334155; }
-        .detail-ex-weight { font-size: 9px; font-weight: 700; color: #60a5fa; white-space: nowrap; flex-shrink: 0; }
+        .detail-ex-weight { font-size: 9px; font-weight: 700; color: #60a5fa; white-space: nowrap; flex-shrink: 0; cursor: pointer; }
+        .detail-ex-weight:hover { filter: brightness(1.3); }
+        .detail-weight-input {
+            width: 96px; text-align: right; flex-shrink: 0;
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(59,130,246,0.6);
+            border-radius: 5px; color: #93c5fd; font-size: 11px; font-weight: 700;
+            padding: 3px 5px; font-family: inherit; outline: none;
+        }
         .detail-footer { display: flex; justify-content: space-between; align-items: center; padding: 0.625rem 1rem; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.04); }
         .detail-footer-lbl { font-size: 9px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; }
         .detail-footer-val { font-size: 0.75rem; font-weight: 700; color: #94a3b8; }
@@ -732,6 +747,9 @@
         /* ── State ── */
         let activeDay = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
         let completedSets = JSON.parse(localStorage.getItem('gymCompletedSets') || '{}');
+        let loggedWeights = JSON.parse(localStorage.getItem('gymLoggedWeights') || '{}');
+        let editingWeightKey = null;     // main view: exercise index being edited
+        let editingCalWeightKey = null;  // calendar: `${dateKey}|${exIdx}` being edited
         let timeLeft = 0;
         let totalRestTime = 0;
         let timerInterval = null;
@@ -757,7 +775,8 @@
             const status = w.isRest ? 'rest' : (done > 0 ? 'completed' : null);
             if (!status) return;
             const details = w.exercises.map((ex, ei) => ({
-                name: ex.name, emoji: ex.emoji, sets: ex.sets, weight: ex.weight,
+                name: ex.name, emoji: ex.emoji, sets: ex.sets,
+                weight: loggedWeights[`${activeDay}-${ei}`] || ex.weight,
                 doneSets: [...Array(ex.sets)].filter((_, si) => completedSets[`${activeDay}-${ei}-${si}`]).length
             }));
             const hist = getHistory();
@@ -822,7 +841,7 @@
 
         /* ── Calendar interaction ── */
         function toggleProfileCalendar() { showProfileCalendar = !showProfileCalendar; render(); }
-        function closeProfileCalendar()  { showProfileCalendar = false; selectedCalendarDate = null; render(); }
+        function closeProfileCalendar()  { showProfileCalendar = false; selectedCalendarDate = null; editingCalWeightKey = null; render(); }
         function navCalendar(dir) {
             calendarViewDate = new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + dir, 1);
             render();
@@ -830,6 +849,7 @@
         function selectCalDate(key) {
             selectedCalendarDate = selectedCalendarDate === key ? null : key;
             statusDropdownKey = null;
+            editingCalWeightKey = null;
             render();
         }
         function openStatusDropdown(k, e) {
@@ -919,10 +939,17 @@
                         const pips = arr.map((done, si) =>
                             `<span class="detail-pip ${done?'done':'miss'}" onclick="toggleHistorySet('${selectedCalendarDate}',${ei},${si})">${done?'✓':'·'}</span>`
                         ).join('');
+                        const editingCalW = editingCalWeightKey === `${selectedCalendarDate}|${ei}`;
+                        const weightCell = editingCalW
+                            ? `<input class="detail-weight-input" id="cal-weight-input-active" value="${(ex.weight || '').replace(/"/g,'&quot;')}"
+                                   onclick="event.stopPropagation()"
+                                   onblur="saveCalWeight('${selectedCalendarDate}',${ei},this.value)"
+                                   onkeydown="if(event.key==='Enter'){this.blur()}">`
+                            : `<span class="detail-ex-weight" onclick="editCalWeight('${selectedCalendarDate}',${ei},event)">${ex.weight} ✎</span>`;
                         return `<div class="detail-ex-row">
                             <span class="detail-ex-name">${ex.emoji} ${ex.name}</span>
                             <div class="detail-ex-sets">${pips}</div>
-                            <span class="detail-ex-weight">${ex.weight}</span>
+                            ${weightCell}
                         </div>`;
                     }).join('');
                 }
@@ -992,6 +1019,33 @@
             localStorage.setItem('gymCompletedSets', JSON.stringify(completedSets));
         }
 
+        /* ── Weight editing (main view) ── */
+        function editWeight(exIdx) { editingWeightKey = exIdx; render(); }
+        function cancelEditWeight() { editingWeightKey = null; render(); }
+        function saveWeight(exIdx, val) {
+            val = (val || '').trim();
+            const wkey = `${activeDay}-${exIdx}`;
+            if (val) loggedWeights[wkey] = val; else delete loggedWeights[wkey];
+            localStorage.setItem('gymLoggedWeights', JSON.stringify(loggedWeights));
+            editingWeightKey = null;
+            saveHistoryEntry();
+            render();
+        }
+
+        /* ── Weight editing (calendar history) ── */
+        function editCalWeight(key, exIdx, e) { if (e) e.stopPropagation(); editingCalWeightKey = `${key}|${exIdx}`; render(); }
+        function saveCalWeight(key, exIdx, val) {
+            const hist = getHistory();
+            const ex = hist[key] && hist[key].workoutDetails && hist[key].workoutDetails[exIdx];
+            if (ex) {
+                const v = (val || '').trim();
+                if (v) ex.weight = v;
+                localStorage.setItem('gymHistory', JSON.stringify(hist));
+            }
+            editingCalWeightKey = null;
+            render();
+        }
+
         function toggleSet(exIdx, setIdx, rest) {
             const key = `${activeDay}-${exIdx}-${setIdx}`;
             completedSets[key] = !completedSets[key];
@@ -1010,7 +1064,7 @@
             render();
         }
 
-        function changeDay(idx) { activeDay = idx; render(); }
+        function changeDay(idx) { activeDay = idx; editingWeightKey = null; render(); }
 
         function startTimer(secs) {
             stopTimer();
@@ -1081,6 +1135,9 @@
             const exercisesHTML = w.exercises.map((ex, exIdx) => {
                 const allDone = ex.sets > 0 && [...Array(ex.sets)].every((_, i) => completedSets[`${activeDay}-${exIdx}-${i}`]);
                 const tags = ex.tags.map(t => `<span class="tag">${t}</span>`).join('');
+                const loggedW = loggedWeights[`${activeDay}-${exIdx}`];
+                const wDisplay = loggedW || ex.weight;
+                const editingThisWeight = editingWeightKey === exIdx;
                 const sets = [...Array(ex.sets)].map((_, si) => {
                     const done = completedSets[`${activeDay}-${exIdx}-${si}`];
                     return `<button class="set-btn ${done ? 'done' : 'pending'}" onclick="toggleSet(${exIdx},${si},${ex.rest})">
@@ -1117,8 +1174,12 @@
                             </div>
                         </div>
                         <div class="weight-box">
-                            <span class="weight-label">Starting Weight</span>
-                            <span class="weight-val">${ex.weight}</span>
+                            <span class="weight-label">${loggedW ? 'Working Weight' : 'Suggested Weight'}</span>
+                            ${editingThisWeight
+                                ? `<input class="weight-input" id="weight-input-active" value="${(loggedW || '').replace(/"/g,'&quot;')}" placeholder="${ex.weight.replace(/"/g,'&quot;')}"
+                                       onblur="saveWeight(${exIdx}, this.value)"
+                                       onkeydown="if(event.key==='Enter'){this.blur()}else if(event.key==='Escape'){cancelEditWeight()}">`
+                                : `<span class="weight-val" onclick="editWeight(${exIdx})">${wDisplay} <span class="weight-edit">✎</span></span>`}
                         </div>
                     </div>
                     <div class="sets-area">
@@ -1183,6 +1244,9 @@
             const scrollY = window.scrollY;
             document.getElementById('app').innerHTML = html;
             window.scrollTo(0, scrollY);
+
+            const wInput = document.getElementById('weight-input-active') || document.getElementById('cal-weight-input-active');
+            if (wInput) { wInput.focus(); wInput.select(); }
         }
 
         window.onload = () => { seedDemoHistory(); render(); };
