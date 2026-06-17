@@ -839,6 +839,57 @@
             return { completed, skipped, rest, consistency, streak };
         }
 
+        /* ── Weight progression suggestion ──
+           The app only records how many sets were marked done per session, not reps
+           performed, so "hit the top of the rep range" is treated as "completed all
+           prescribed sets". Suggestions are derived only from sessions where the user
+           logged a concrete single-number working weight; range/seed strings are ignored. */
+        const HEAVY_COMPOUNDS = ['Hack Squat', 'Leg Press', 'Romanian Deadlift', 'Hip Thrust'];
+        function parseWeight(str) {
+            if (!str) return null;
+            const s = String(str);
+            if (/\d+(?:\.\d+)?\s*[–-]\s*\d+(?:\.\d+)?/.test(s)) return null; // a range, not a working weight
+            const m = s.match(/\d+(?:\.\d+)?/);
+            return m ? parseFloat(m[0]) : null;
+        }
+        function formatSuggestion(origStr, newNum) {
+            const n = Number.isInteger(newNum) ? String(newNum) : (Math.round(newNum * 2) / 2).toString();
+            return String(origStr).replace(/\d+(?:\.\d+)?/, n);
+        }
+        function incrementFor(ex) {
+            return (HEAVY_COMPOUNDS.includes(ex.name) || (ex.tags || []).includes('Compound')) ? 5 : 2.5;
+        }
+        function exerciseSessions(name) {
+            const hist = getHistory();
+            const out = [];
+            Object.entries(hist).forEach(([k, ent]) => {
+                const det = (ent.workoutDetails || []).find(d => d.name === name);
+                if (!det) return;
+                const num = parseWeight(det.weight);
+                if (num == null) return;
+                const [y, m, d] = k.split('-').map(Number);
+                out.push({
+                    t: new Date(y, m - 1, d).getTime(),
+                    num, weightStr: det.weight,
+                    success: (det.doneSets || 0) >= det.sets
+                });
+            });
+            return out.sort((a, b) => b.t - a.t);
+        }
+        function suggestedWeight(dayIdx, exIdx) {
+            const ex = workoutData[dayIdx].exercises[exIdx];
+            const sessions = exerciseSessions(ex.name);
+            if (!sessions.length) return ex.weight;
+            const last = sessions[0];
+            if (sessions.length >= 2 && !sessions[0].success && !sessions[1].success) {
+                return formatSuggestion(last.weightStr, Math.round(last.num * 0.9 * 2) / 2);
+            }
+            if (last.success) {
+                return formatSuggestion(last.weightStr, last.num + incrementFor(ex));
+            }
+            return last.weightStr;
+        }
+
         /* ── Calendar interaction ── */
         function toggleProfileCalendar() { showProfileCalendar = !showProfileCalendar; render(); }
         function closeProfileCalendar()  { showProfileCalendar = false; selectedCalendarDate = null; editingCalWeightKey = null; render(); }
@@ -1136,7 +1187,8 @@
                 const allDone = ex.sets > 0 && [...Array(ex.sets)].every((_, i) => completedSets[`${activeDay}-${exIdx}-${i}`]);
                 const tags = ex.tags.map(t => `<span class="tag">${t}</span>`).join('');
                 const loggedW = loggedWeights[`${activeDay}-${exIdx}`];
-                const wDisplay = loggedW || ex.weight;
+                const suggestion = suggestedWeight(activeDay, exIdx);
+                const wDisplay = loggedW || suggestion;
                 const editingThisWeight = editingWeightKey === exIdx;
                 const sets = [...Array(ex.sets)].map((_, si) => {
                     const done = completedSets[`${activeDay}-${exIdx}-${si}`];
@@ -1176,7 +1228,7 @@
                         <div class="weight-box">
                             <span class="weight-label">${loggedW ? 'Working Weight' : 'Suggested Weight'}</span>
                             ${editingThisWeight
-                                ? `<input class="weight-input" id="weight-input-active" value="${(loggedW || '').replace(/"/g,'&quot;')}" placeholder="${ex.weight.replace(/"/g,'&quot;')}"
+                                ? `<input class="weight-input" id="weight-input-active" value="${(loggedW || '').replace(/"/g,'&quot;')}" placeholder="${String(suggestion).replace(/"/g,'&quot;')}"
                                        onblur="saveWeight(${exIdx}, this.value)"
                                        onkeydown="if(event.key==='Enter'){this.blur()}else if(event.key==='Escape'){cancelEditWeight()}">`
                                 : `<span class="weight-val" onclick="editWeight(${exIdx})">${wDisplay} <span class="weight-edit">✎</span></span>`}
