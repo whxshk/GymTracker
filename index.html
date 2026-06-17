@@ -229,6 +229,7 @@
             margin-bottom: 0.75rem;
             position: relative;
             z-index: 1;
+            padding-right: 5rem;
         }
         .card-img-wrap { position: relative; flex-shrink: 0; }
         .card-img {
@@ -655,6 +656,47 @@
         .detail-footer { display: flex; justify-content: space-between; align-items: center; padding: 0.625rem 1rem; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.04); }
         .detail-footer-lbl { font-size: 9px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; }
         .detail-footer-val { font-size: 0.75rem; font-weight: 700; color: #94a3b8; }
+
+        /* Trend section */
+        .trend-section { padding: 0.875rem 1rem 1.125rem; border-top: 1px solid rgba(255,255,255,0.04); }
+        .trend-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.75rem; }
+        .trend-title { font-size: 0.8rem; font-weight: 900; color: #e2e8f0; font-style: italic; text-transform: uppercase; letter-spacing: 0.02em; }
+        .bw-edit { display: flex; align-items: center; gap: 0.4rem; }
+        .bw-val { font-size: 0.8rem; font-weight: 700; color: #c4b5fd; cursor: pointer; }
+        .bw-val:hover { filter: brightness(1.2); }
+        .bw-input, .bw-date { background: rgba(0,0,0,0.4); border: 1px solid rgba(168,85,247,0.5); border-radius: 6px; color: #e9d5ff; font-size: 11px; font-weight: 700; padding: 4px 6px; font-family: inherit; outline: none; }
+        .bw-input { width: 58px; text-align: center; }
+        .bw-save { background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: #e9d5ff; border-radius: 6px; font-size: 10px; font-weight: 800; padding: 5px 10px; cursor: pointer; font-family: inherit; text-transform: uppercase; letter-spacing: 0.05em; }
+        .bw-save:active { transform: scale(0.95); }
+        .trend-controls { margin-bottom: 0.625rem; }
+        .lift-select { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.625rem; color: #cbd5e1; font-size: 0.75rem; font-weight: 700; padding: 0.5rem 0.625rem; font-family: inherit; outline: none; -webkit-appearance: none; appearance: none; cursor: pointer; }
+        .trend-chart { background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); border-radius: 1rem; padding: 0.5rem; }
+        .trend-chart svg { display: block; width: 100%; height: auto; }
+        .trend-empty { text-align: center; color: #475569; font-size: 0.7rem; font-weight: 700; padding: 1.75rem 1rem; line-height: 1.7; }
+        .trend-legend { display: flex; justify-content: center; gap: 1.25rem; padding-top: 0.75rem; }
+        .trend-legend .legend-item { display: flex; align-items: center; gap: 0.375rem; font-size: 9px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+        .trend-dot { width: 12px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+
+        /* PR badge */
+        .pr-badge {
+            position: absolute; top: 0.75rem; right: 0.75rem; z-index: 2;
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 8px; border-radius: 8px;
+            background: linear-gradient(135deg, rgba(245,158,11,0.18), rgba(217,119,6,0.18));
+            border: 1px solid rgba(245,158,11,0.35);
+            font-size: 9px; font-weight: 800; letter-spacing: 0.04em;
+            color: #fcd34d; cursor: pointer; user-select: none; line-height: 1.3;
+            white-space: nowrap;
+        }
+        .pr-badge.empty { color: #94a3b8; background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+        .pr-badge:hover { filter: brightness(1.18); }
+        .pr-input {
+            position: absolute; top: 0.6rem; right: 0.6rem; z-index: 3;
+            width: 78px; text-align: center;
+            background: rgba(0,0,0,0.5); border: 1px solid rgba(245,158,11,0.6);
+            border-radius: 8px; color: #fcd34d; font-size: 11px; font-weight: 800;
+            padding: 4px 6px; font-family: inherit; outline: none;
+        }
     </style>
 </head>
 <body>
@@ -760,6 +802,15 @@
         let selectedCalendarDate = null;
         let statusDropdownKey    = null;
 
+        /* ── Bodyweight + trend state ── */
+        let bodyweightLog = JSON.parse(localStorage.getItem('gymBodyweight') || '[]');
+        let editingBodyweight = false;
+        let chartLift = 'Incline Chest Press';
+
+        /* ── Manual PRs (independent of progression logic) ── */
+        let prs = JSON.parse(localStorage.getItem('gymPRs') || '{}');
+        let editingPRKey = null;
+
         /* ── History helpers ── */
         function dateKey(d) {
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -839,9 +890,175 @@
             return { completed, skipped, rest, consistency, streak };
         }
 
+        /* ── Weight progression suggestion ──
+           The app only records how many sets were marked done per session, not reps
+           performed, so "hit the top of the rep range" is treated as "completed all
+           prescribed sets". Suggestions are derived only from sessions where the user
+           logged a concrete single-number working weight; range/seed strings are ignored. */
+        const HEAVY_COMPOUNDS = ['Hack Squat', 'Leg Press', 'Romanian Deadlift', 'Hip Thrust'];
+        function parseWeight(str) {
+            if (!str) return null;
+            const s = String(str);
+            if (/\d+(?:\.\d+)?\s*[–-]\s*\d+(?:\.\d+)?/.test(s)) return null; // a range, not a working weight
+            const m = s.match(/\d+(?:\.\d+)?/);
+            return m ? parseFloat(m[0]) : null;
+        }
+        function formatSuggestion(origStr, newNum) {
+            const n = Number.isInteger(newNum) ? String(newNum) : (Math.round(newNum * 2) / 2).toString();
+            return String(origStr).replace(/\d+(?:\.\d+)?/, n);
+        }
+        function incrementFor(ex) {
+            return (HEAVY_COMPOUNDS.includes(ex.name) || (ex.tags || []).includes('Compound')) ? 5 : 2.5;
+        }
+        function exerciseSessions(name) {
+            const hist = getHistory();
+            const out = [];
+            Object.entries(hist).forEach(([k, ent]) => {
+                const det = (ent.workoutDetails || []).find(d => d.name === name);
+                if (!det) return;
+                const num = parseWeight(det.weight);
+                if (num == null) return;
+                const [y, m, d] = k.split('-').map(Number);
+                out.push({
+                    t: new Date(y, m - 1, d).getTime(),
+                    num, weightStr: det.weight,
+                    success: (det.doneSets || 0) >= det.sets
+                });
+            });
+            return out.sort((a, b) => b.t - a.t);
+        }
+        function suggestedWeight(dayIdx, exIdx) {
+            const ex = workoutData[dayIdx].exercises[exIdx];
+            const sessions = exerciseSessions(ex.name);
+            if (!sessions.length) return ex.weight;
+            const last = sessions[0];
+            if (sessions.length >= 2 && !sessions[0].success && !sessions[1].success) {
+                return formatSuggestion(last.weightStr, Math.round(last.num * 0.9 * 2) / 2);
+            }
+            if (last.success) {
+                return formatSuggestion(last.weightStr, last.num + incrementFor(ex));
+            }
+            return last.weightStr;
+        }
+
+        /* ── Bodyweight logging ── */
+        function editBodyweight() { editingBodyweight = true; render(); }
+        function saveBodyweight() {
+            const dEl = document.getElementById('bw-date-input');
+            const wEl = document.getElementById('bw-weight-input-active');
+            const date = dEl ? dEl.value : dateKey(new Date());
+            const weight = parseFloat(wEl ? wEl.value : '');
+            if (date && !isNaN(weight)) {
+                const i = bodyweightLog.findIndex(e => e.date === date);
+                if (i >= 0) bodyweightLog[i].weight = weight;
+                else bodyweightLog.push({ date, weight });
+                bodyweightLog.sort((a, b) => a.date.localeCompare(b.date));
+                localStorage.setItem('gymBodyweight', JSON.stringify(bodyweightLog));
+            }
+            editingBodyweight = false;
+            render();
+        }
+        function setChartLift(name) { chartLift = name; render(); }
+
+        /* ── Trend chart ── */
+        function bodyweightSeries() {
+            const cutoff = Date.now() - 90 * 86400000;
+            return bodyweightLog
+                .map(e => { const [y, m, d] = e.date.split('-').map(Number); return { t: new Date(y, m - 1, d).getTime(), v: Number(e.weight) }; })
+                .filter(p => !isNaN(p.v) && p.t >= cutoff)
+                .sort((a, b) => a.t - b.t);
+        }
+        function liftSeries(name) {
+            const hist = getHistory();
+            const cutoff = Date.now() - 90 * 86400000;
+            const pts = [];
+            Object.entries(hist).forEach(([k, ent]) => {
+                const det = (ent.workoutDetails || []).find(d => d.name === name);
+                if (!det) return;
+                const v = parseWeight(det.weight);
+                if (v == null) return;
+                const [y, m, d] = k.split('-').map(Number);
+                const t = new Date(y, m - 1, d).getTime();
+                if (t < cutoff) return;
+                pts.push({ t, v });
+            });
+            return pts.sort((a, b) => a.t - b.t);
+        }
+        function buildTrendSVG(bw, lift) {
+            const all = bw.concat(lift);
+            const W = 320, H = 150, padL = 10, padR = 10, padT = 14, padB = 24;
+            const plotW = W - padL - padR, plotH = H - padT - padB;
+            let tMin = Math.min(...all.map(p => p.t)), tMax = Math.max(...all.map(p => p.t));
+            if (tMin === tMax) { tMin -= 86400000; tMax += 86400000; }
+            const sx = t => padL + (t - tMin) / (tMax - tMin) * plotW;
+            const fmtDate = t => { const d = new Date(t); return `${d.getDate()}/${d.getMonth() + 1}`; };
+            function series(pts, color, fillId) {
+                if (!pts.length) return '';
+                let vMin = Math.min(...pts.map(p => p.v)), vMax = Math.max(...pts.map(p => p.v));
+                if (vMin === vMax) { vMin -= 1; vMax += 1; }
+                const sy = v => padT + (1 - (v - vMin) / (vMax - vMin)) * plotH;
+                const coords = pts.map(p => `${sx(p.t).toFixed(1)},${sy(p.v).toFixed(1)}`);
+                const dots = pts.map(p => `<circle cx="${sx(p.t).toFixed(1)}" cy="${sy(p.v).toFixed(1)}" r="2.5" fill="${color}"/>`).join('');
+                const line = pts.length > 1 ? `<polyline points="${coords.join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` : '';
+                let area = '';
+                if (pts.length > 1) {
+                    const baseY = padT + plotH;
+                    area = `<polygon points="${sx(pts[0].t).toFixed(1)},${baseY} ${coords.join(' ')} ${sx(pts[pts.length - 1].t).toFixed(1)},${baseY}" fill="url(#${fillId})" opacity="0.5"/>`;
+                }
+                const last = pts[pts.length - 1];
+                const label = `<text x="${Math.min(sx(last.t), W - 22).toFixed(1)}" y="${(sy(last.v) - 5).toFixed(1)}" fill="${color}" font-size="9" font-weight="700">${last.v}</text>`;
+                return area + line + dots + label;
+            }
+            return `<svg viewBox="0 0 ${W} ${H}" role="img">
+                <defs>
+                    <linearGradient id="bwFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a855f7" stop-opacity="0.35"/><stop offset="100%" stop-color="#a855f7" stop-opacity="0"/></linearGradient>
+                    <linearGradient id="liftFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#60a5fa" stop-opacity="0.3"/><stop offset="100%" stop-color="#60a5fa" stop-opacity="0"/></linearGradient>
+                </defs>
+                ${series(bw, '#a855f7', 'bwFill')}
+                ${series(lift, '#60a5fa', 'liftFill')}
+                <line x1="${padL}" y1="${padT + plotH}" x2="${W - padR}" y2="${padT + plotH}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                <text x="${padL}" y="${H - 8}" fill="#475569" font-size="8" font-weight="700">${fmtDate(tMin)}</text>
+                <text x="${W - padR}" y="${H - 8}" fill="#475569" font-size="8" font-weight="700" text-anchor="end">${fmtDate(tMax)}</text>
+            </svg>`;
+        }
+        function renderTrendSection() {
+            const today = new Date();
+            const todayK = dateKey(today);
+            const todayBw = bodyweightLog.find(e => e.date === todayK);
+            const liftNames = [...new Set(workoutData.flatMap(d => d.exercises.map(e => e.name)))];
+            const bwCtrl = editingBodyweight
+                ? `<input type="date" class="bw-date" id="bw-date-input" value="${todayK}" max="${todayK}">
+                   <input type="number" inputmode="decimal" step="0.1" class="bw-input" id="bw-weight-input-active" placeholder="kg" value="${todayBw ? todayBw.weight : ''}"
+                       onkeydown="if(event.key==='Enter'){saveBodyweight()}else if(event.key==='Escape'){editingBodyweight=false;render()}">
+                   <button class="bw-save" onclick="saveBodyweight()">Save</button>`
+                : `<span class="bw-val" onclick="editBodyweight()">${todayBw ? todayBw.weight + ' kg' : 'Log weight'} <span class="weight-edit">✎</span></span>`;
+            const bw = bodyweightSeries();
+            const lift = liftSeries(chartLift);
+            const chart = (bw.length + lift.length) < 3
+                ? `<div class="trend-empty">Not enough data yet.<br>Log a few bodyweight entries and workouts to see your trend.</div>`
+                : buildTrendSVG(bw, lift);
+            return `
+            <div class="trend-section">
+                <div class="trend-head">
+                    <span class="trend-title">📈 Trends</span>
+                    <div class="bw-edit">${bwCtrl}</div>
+                </div>
+                <div class="trend-controls">
+                    <select class="lift-select" onchange="setChartLift(this.value)">
+                        ${liftNames.map(n => `<option value="${n}" ${n === chartLift ? 'selected' : ''}>${n}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="trend-chart">${chart}</div>
+                <div class="trend-legend">
+                    <div class="legend-item"><span class="trend-dot" style="background:#a855f7"></span>Bodyweight</div>
+                    <div class="legend-item"><span class="trend-dot" style="background:#60a5fa"></span>${chartLift}</div>
+                </div>
+            </div>`;
+        }
+
         /* ── Calendar interaction ── */
         function toggleProfileCalendar() { showProfileCalendar = !showProfileCalendar; render(); }
-        function closeProfileCalendar()  { showProfileCalendar = false; selectedCalendarDate = null; editingCalWeightKey = null; render(); }
+        function closeProfileCalendar()  { showProfileCalendar = false; selectedCalendarDate = null; editingCalWeightKey = null; editingBodyweight = false; render(); }
         function navCalendar(dir) {
             calendarViewDate = new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + dir, 1);
             render();
@@ -1010,6 +1227,7 @@
                         <div class="legend-item"><div class="legend-swatch skipped"></div>Skipped</div>
                         <div class="legend-item"><div class="legend-swatch rest"></div>Rest</div>
                     </div>
+                    ${renderTrendSection()}
                     ${detailHTML}
                 </div>
             </div>`;
@@ -1029,6 +1247,17 @@
             localStorage.setItem('gymLoggedWeights', JSON.stringify(loggedWeights));
             editingWeightKey = null;
             saveHistoryEntry();
+            render();
+        }
+
+        /* ── Manual PR editing (decoupled from progression) ── */
+        function editPR(name, e) { if (e) e.stopPropagation(); editingPRKey = name; render(); }
+        function savePR(name, val) {
+            const w = parseFloat((val || '').trim());
+            if (!isNaN(w) && w > 0) prs[name] = { weight: w, date: dateKey(new Date()) };
+            else delete prs[name];
+            localStorage.setItem('gymPRs', JSON.stringify(prs));
+            editingPRKey = null;
             render();
         }
 
@@ -1064,7 +1293,7 @@
             render();
         }
 
-        function changeDay(idx) { activeDay = idx; editingWeightKey = null; render(); }
+        function changeDay(idx) { activeDay = idx; editingWeightKey = null; editingPRKey = null; render(); }
 
         function startTimer(secs) {
             stopTimer();
@@ -1136,7 +1365,8 @@
                 const allDone = ex.sets > 0 && [...Array(ex.sets)].every((_, i) => completedSets[`${activeDay}-${exIdx}-${i}`]);
                 const tags = ex.tags.map(t => `<span class="tag">${t}</span>`).join('');
                 const loggedW = loggedWeights[`${activeDay}-${exIdx}`];
-                const wDisplay = loggedW || ex.weight;
+                const suggestion = suggestedWeight(activeDay, exIdx);
+                const wDisplay = loggedW || suggestion;
                 const editingThisWeight = editingWeightKey === exIdx;
                 const sets = [...Array(ex.sets)].map((_, si) => {
                     const done = completedSets[`${activeDay}-${exIdx}-${si}`];
@@ -1145,10 +1375,18 @@
                     </button>`;
                 }).join('');
 
+                const pr = prs[ex.name];
+                const prBadge = editingPRKey === ex.name
+                    ? `<input class="pr-input" id="pr-input-active" type="number" inputmode="decimal" step="0.5" value="${pr ? pr.weight : ''}" placeholder="PR kg"
+                           onblur="savePR('${ex.name.replace(/'/g,"\\'")}', this.value)"
+                           onkeydown="if(event.key==='Enter'){this.blur()}else if(event.key==='Escape'){editingPRKey=null;render()}">`
+                    : `<span class="pr-badge ${pr ? '' : 'empty'}" onclick="editPR('${ex.name.replace(/'/g,"\\'")}', event)">${pr ? `🏆 PR ${pr.weight}kg` : 'PR +'}</span>`;
+
                 return `
                 <div class="ex-card ${allDone ? 'all-done' : ''}">
                     <div class="card-top">
                         <div class="card-emoji-bg">${ex.emoji}</div>
+                        ${prBadge}
                         <div class="card-info-row">
                             <div class="card-img-wrap">
                                 <img class="card-img" src="https://picsum.photos/seed/${ex.name.replace(/\s/g,'')}/150/150?grayscale" alt="${ex.name}" onerror="this.style.display='none'">
@@ -1176,7 +1414,7 @@
                         <div class="weight-box">
                             <span class="weight-label">${loggedW ? 'Working Weight' : 'Suggested Weight'}</span>
                             ${editingThisWeight
-                                ? `<input class="weight-input" id="weight-input-active" value="${(loggedW || '').replace(/"/g,'&quot;')}" placeholder="${ex.weight.replace(/"/g,'&quot;')}"
+                                ? `<input class="weight-input" id="weight-input-active" value="${(loggedW || '').replace(/"/g,'&quot;')}" placeholder="${String(suggestion).replace(/"/g,'&quot;')}"
                                        onblur="saveWeight(${exIdx}, this.value)"
                                        onkeydown="if(event.key==='Enter'){this.blur()}else if(event.key==='Escape'){cancelEditWeight()}">`
                                 : `<span class="weight-val" onclick="editWeight(${exIdx})">${wDisplay} <span class="weight-edit">✎</span></span>`}
@@ -1245,7 +1483,7 @@
             document.getElementById('app').innerHTML = html;
             window.scrollTo(0, scrollY);
 
-            const wInput = document.getElementById('weight-input-active') || document.getElementById('cal-weight-input-active');
+            const wInput = document.getElementById('weight-input-active') || document.getElementById('cal-weight-input-active') || document.getElementById('bw-weight-input-active') || document.getElementById('pr-input-active');
             if (wInput) { wInput.focus(); wInput.select(); }
         }
 
