@@ -1,4 +1,4 @@
-const CACHE = 'gym-tracker-v9';
+const CACHE = 'gym-tracker-v10';
 
 const PRECACHE = [
   '.',

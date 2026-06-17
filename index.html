@@ -673,9 +673,14 @@
         .trend-chart { background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); border-radius: 1rem; padding: 0.5rem; }
         .trend-chart svg { display: block; width: 100%; height: auto; }
         .trend-empty { text-align: center; color: #475569; font-size: 0.7rem; font-weight: 700; padding: 1.75rem 1rem; line-height: 1.7; }
-        .trend-legend { display: flex; justify-content: center; gap: 1.25rem; padding-top: 0.75rem; }
-        .trend-legend .legend-item { display: flex; align-items: center; gap: 0.375rem; font-size: 9px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
-        .trend-dot { width: 12px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+        .trend-tabs { display: flex; gap: 6px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 0.75rem; padding: 4px; margin-bottom: 0.75rem; }
+        .trend-tab { flex: 1; padding: 0.5rem; border: none; background: none; color: #64748b; font-family: inherit; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; }
+        .trend-tab.active { background: rgba(255,255,255,0.08); color: #fff; }
+        .trend-stats { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; margin: 0.25rem 0 0.625rem; }
+        .trend-current { font-size: 1.05rem; font-weight: 900; color: #fff; font-family: monospace; letter-spacing: -0.02em; }
+        .trend-change { font-size: 0.7rem; font-weight: 800; text-align: right; }
+        .trend-change.good { color: #34d399; }
+        .trend-change.bad { color: #fb923c; }
 
         /* PR badge */
         .pr-badge {
@@ -803,6 +808,7 @@
         let bodyweightLog = JSON.parse(localStorage.getItem('gymBodyweight') || '[]');
         let editingBodyweight = false;
         let chartLift = 'Incline Chest Press';
+        let trendTab = 'bodyweight';
 
         /* ── History helpers ── */
         function dateKey(d) {
@@ -838,6 +844,32 @@
             bodyweightLog = log;
             localStorage.setItem('gymBodyweight', JSON.stringify(log));
             localStorage.setItem('gymBodyweightSeeded', '1');
+        }
+        function seedDemoLifts() {
+            if (localStorage.getItem('gymLiftDemoSeeded')) return;
+            const hist = getHistory();
+            const today = new Date();
+            const plans = [
+                { dayIdx: 0, lift: 'Incline Chest Press', sessions: [[32,30],[27,32.5],[20,35],[13,37.5],[6,40]] },
+                { dayIdx: 2, lift: 'Hack Squat',          sessions: [[30,80],[16,90],[2,100]] },
+            ];
+            plans.forEach(({ dayIdx, lift, sessions }) => {
+                const w = workoutData[dayIdx];
+                const total = w.exercises.reduce((a, e) => a + e.sets, 0);
+                sessions.forEach(([ago, wt]) => {
+                    const d = new Date(today); d.setDate(d.getDate() - ago);
+                    hist[dateKey(d)] = {
+                        status: 'completed', completedSets: total, totalSets: total,
+                        workoutDay: dayIdx, workoutTitle: w.title,
+                        workoutDetails: w.exercises.map(ex => ({
+                            name: ex.name, emoji: ex.emoji, sets: ex.sets, doneSets: ex.sets,
+                            weight: ex.name === lift ? `${wt} kg` : ex.weight
+                        }))
+                    };
+                });
+            });
+            localStorage.setItem('gymHistory', JSON.stringify(hist));
+            localStorage.setItem('gymLiftDemoSeeded', '1');
         }
         function seedDemoHistory() {
             if (localStorage.getItem('gymHistorySeeded')) return;
@@ -977,100 +1009,152 @@
             render();
         }
         function setChartLift(name) { chartLift = name; render(); }
+        function setTrendTab(tab) { trendTab = tab; render(); }
 
-        /* ── Trend chart ── */
-        function bodyweightSeries() {
-            const cutoff = Date.now() - 90 * 86400000;
+        /* ── Trend data (each metric kept fully separate) ── */
+        const REST_LIFT_NAMES = new Set(workoutData.filter(d => d.isRest).flatMap(d => d.exercises.map(e => e.name)));
+        const LIFT_BLOCKLIST = /walk|cardio|mobility|stretch|recovery|nutrition|rest/i;
+        const LIFT_PRIORITY = ['Incline Chest Press','Hack Squat','Leg Press','Chest Press','Shoulder Press','Lat Pulldown','Seated Row'];
+        const TREND_WINDOW_MS = 90 * 86400000;
+
+        function bodyweightPoints() {
+            const cutoff = Date.now() - TREND_WINDOW_MS;
             return bodyweightLog
-                .map(e => { const [y, m, d] = e.date.split('-').map(Number); return { t: new Date(y, m - 1, d).getTime(), v: Number(e.weight) }; })
-                .filter(p => !isNaN(p.v) && p.t >= cutoff)
+                .filter(e => Number.isFinite(Number(e.weight)) && Number(e.weight) > 20)
+                .map(e => { const [y, m, d] = e.date.split('-').map(Number); return { t: new Date(y, m - 1, d).getTime(), value: Number(e.weight) }; })
+                .filter(p => p.t >= cutoff)
                 .sort((a, b) => a.t - b.t);
         }
-        function liftSeries(name) {
+        function eligibleLifts() {
             const hist = getHistory();
-            const cutoff = Date.now() - 90 * 86400000;
+            const freq = {};
+            Object.values(hist).forEach(ent => {
+                if (ent.status === 'rest') return;
+                (ent.workoutDetails || []).forEach(d => {
+                    if (REST_LIFT_NAMES.has(d.name) || LIFT_BLOCKLIST.test(d.name)) return;
+                    const w = parseWeight(d.weight);
+                    if (!(Number.isFinite(w) && w > 0)) return;
+                    freq[d.name] = (freq[d.name] || 0) + 1;
+                });
+            });
+            return Object.keys(freq).sort((a, b) => freq[b] - freq[a]);
+        }
+        function defaultLift(eligible) {
+            for (const p of LIFT_PRIORITY) {
+                const hit = eligible.find(n => n === p || n.includes(p));
+                if (hit) return hit;
+            }
+            return eligible[0];
+        }
+        function liftPoints(name) {
+            const hist = getHistory();
+            const cutoff = Date.now() - TREND_WINDOW_MS;
             const pts = [];
             Object.entries(hist).forEach(([k, ent]) => {
+                if (ent.status === 'rest') return;
                 const det = (ent.workoutDetails || []).find(d => d.name === name);
                 if (!det) return;
-                const v = parseWeight(det.weight);
-                if (v == null) return;
+                const w = parseWeight(det.weight);
+                if (!(Number.isFinite(w) && w > 0)) return;
                 const [y, m, d] = k.split('-').map(Number);
                 const t = new Date(y, m - 1, d).getTime();
                 if (t < cutoff) return;
-                pts.push({ t, v });
+                pts.push({ t, value: w });
             });
             return pts.sort((a, b) => a.t - b.t);
         }
-        function buildTrendSVG(bw, lift) {
-            const all = bw.concat(lift);
-            const W = 320, H = 150, padL = 10, padR = 10, padT = 14, padB = 24;
+
+        /* ── Single-metric line chart (one Y-axis) ── */
+        function buildLineChart(points, color, fillId) {
+            const W = 320, H = 150, padL = 34, padR = 12, padT = 14, padB = 22;
             const plotW = W - padL - padR, plotH = H - padT - padB;
-            let tMin = Math.min(...all.map(p => p.t)), tMax = Math.max(...all.map(p => p.t));
+            let tMin = Math.min(...points.map(p => p.t)), tMax = Math.max(...points.map(p => p.t));
             if (tMin === tMax) { tMin -= 86400000; tMax += 86400000; }
+            let vMin = Math.min(...points.map(p => p.value)), vMax = Math.max(...points.map(p => p.value));
+            if (vMin === vMax) { vMin -= 1; vMax += 1; }
+            const padv = (vMax - vMin) * 0.12; vMin -= padv; vMax += padv;
             const sx = t => padL + (t - tMin) / (tMax - tMin) * plotW;
+            const sy = v => padT + (1 - (v - vMin) / (vMax - vMin)) * plotH;
+            const baseY = padT + plotH;
             const fmtDate = t => { const d = new Date(t); return `${d.getDate()}/${d.getMonth() + 1}`; };
-            function series(pts, color, fillId) {
-                if (!pts.length) return '';
-                let vMin = Math.min(...pts.map(p => p.v)), vMax = Math.max(...pts.map(p => p.v));
-                if (vMin === vMax) { vMin -= 1; vMax += 1; }
-                const sy = v => padT + (1 - (v - vMin) / (vMax - vMin)) * plotH;
-                const coords = pts.map(p => `${sx(p.t).toFixed(1)},${sy(p.v).toFixed(1)}`);
-                const dots = pts.map(p => `<circle cx="${sx(p.t).toFixed(1)}" cy="${sy(p.v).toFixed(1)}" r="2.5" fill="${color}"/>`).join('');
-                const line = pts.length > 1 ? `<polyline points="${coords.join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` : '';
-                let area = '';
-                if (pts.length > 1) {
-                    const baseY = padT + plotH;
-                    area = `<polygon points="${sx(pts[0].t).toFixed(1)},${baseY} ${coords.join(' ')} ${sx(pts[pts.length - 1].t).toFixed(1)},${baseY}" fill="url(#${fillId})" opacity="0.5"/>`;
-                }
-                const last = pts[pts.length - 1];
-                const label = `<text x="${Math.min(sx(last.t), W - 22).toFixed(1)}" y="${(sy(last.v) - 5).toFixed(1)}" fill="${color}" font-size="9" font-weight="700">${last.v}</text>`;
-                return area + line + dots + label;
-            }
+            const coords = points.map(p => `${sx(p.t).toFixed(1)},${sy(p.value).toFixed(1)}`);
+            const dots = points.map(p => `<circle cx="${sx(p.t).toFixed(1)}" cy="${sy(p.value).toFixed(1)}" r="2.5" fill="${color}"/>`).join('');
+            const line = `<polyline points="${coords.join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+            const area = `<polygon points="${sx(points[0].t).toFixed(1)},${baseY} ${coords.join(' ')} ${sx(points[points.length-1].t).toFixed(1)},${baseY}" fill="url(#${fillId})" opacity="0.5"/>`;
             return `<svg viewBox="0 0 ${W} ${H}" role="img">
-                <defs>
-                    <linearGradient id="bwFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a855f7" stop-opacity="0.35"/><stop offset="100%" stop-color="#a855f7" stop-opacity="0"/></linearGradient>
-                    <linearGradient id="liftFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#60a5fa" stop-opacity="0.3"/><stop offset="100%" stop-color="#60a5fa" stop-opacity="0"/></linearGradient>
-                </defs>
-                ${series(bw, '#a855f7', 'bwFill')}
-                ${series(lift, '#60a5fa', 'liftFill')}
-                <line x1="${padL}" y1="${padT + plotH}" x2="${W - padR}" y2="${padT + plotH}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-                <text x="${padL}" y="${H - 8}" fill="#475569" font-size="8" font-weight="700">${fmtDate(tMin)}</text>
-                <text x="${W - padR}" y="${H - 8}" fill="#475569" font-size="8" font-weight="700" text-anchor="end">${fmtDate(tMax)}</text>
+                <defs><linearGradient id="${fillId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.35"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+                <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${baseY}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                <line x1="${padL}" y1="${baseY}" x2="${W - padR}" y2="${baseY}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                <text x="${padL - 4}" y="${padT + 4}" fill="#475569" font-size="8" font-weight="700" text-anchor="end">${Math.round(vMax)}</text>
+                <text x="${padL - 4}" y="${baseY}" fill="#475569" font-size="8" font-weight="700" text-anchor="end">${Math.round(vMin)}</text>
+                ${area}${line}${dots}
+                <text x="${padL}" y="${H - 6}" fill="#475569" font-size="8" font-weight="700">${fmtDate(tMin)}</text>
+                <text x="${W - padR}" y="${H - 6}" fill="#475569" font-size="8" font-weight="700" text-anchor="end">${fmtDate(tMax)}</text>
             </svg>`;
+        }
+        function trendStats(current, change, days, good, unit) {
+            const sign = change >= 0 ? '+' : '';
+            return `<div class="trend-stats">
+                <span class="trend-current">${current} ${unit}</span>
+                <span class="trend-change ${good ? 'good' : 'bad'}">${sign}${change} ${unit} over ${days} days</span>
+            </div>`;
         }
         function renderTrendSection() {
             const today = new Date();
             const todayK = dateKey(today);
             const todayBw = bodyweightLog.find(e => e.date === todayK);
-            const liftNames = [...new Set(workoutData.flatMap(d => d.exercises.map(e => e.name)))];
             const bwCtrl = editingBodyweight
                 ? `<input type="date" class="bw-date" id="bw-date-input" value="${todayK}" max="${todayK}">
                    <input type="number" inputmode="decimal" step="0.1" class="bw-input" id="bw-weight-input-active" placeholder="kg" value="${todayBw ? todayBw.weight : ''}"
                        onkeydown="if(event.key==='Enter'){saveBodyweight()}else if(event.key==='Escape'){editingBodyweight=false;render()}">
                    <button class="bw-save" onclick="saveBodyweight()">Save</button>`
                 : `<span class="bw-val" onclick="editBodyweight()">${todayBw ? todayBw.weight + ' kg' : 'Log weight'} <span class="weight-edit">✎</span></span>`;
-            const bw = bodyweightSeries();
-            const lift = liftSeries(chartLift);
-            const chart = (bw.length + lift.length) < 3
-                ? `<div class="trend-empty">Not enough data yet.<br>Log a few bodyweight entries and workouts to see your trend.</div>`
-                : buildTrendSVG(bw, lift);
+
+            let body = '';
+            if (trendTab === 'bodyweight') {
+                const pts = bodyweightPoints();
+                if (pts.length < 2) {
+                    body = `<div class="trend-empty">Log at least 2 bodyweight entries to see your trend.</div>`;
+                } else {
+                    const cur = pts[pts.length-1].value, first = pts[0].value;
+                    const change = +(cur - first).toFixed(1);
+                    const days = Math.max(1, Math.round((pts[pts.length-1].t - pts[0].t) / 86400000));
+                    body = trendStats(cur, change, days, change <= 0, 'kg')
+                         + `<div class="trend-chart">${buildLineChart(pts, '#a855f7', 'bwFill')}</div>`;
+                }
+            } else {
+                const eligible = eligibleLifts();
+                if (!eligible.length) {
+                    body = `<div class="trend-empty">No weighted lift data yet. Log sets with weight to unlock lift trends.</div>`;
+                } else {
+                    const selected = eligible.includes(chartLift) ? chartLift : defaultLift(eligible);
+                    const select = `<select class="lift-select" onchange="setChartLift(this.value)">
+                        ${eligible.map(n => `<option value="${n}" ${n === selected ? 'selected' : ''}>${n}</option>`).join('')}
+                    </select>`;
+                    const pts = liftPoints(selected);
+                    if (pts.length < 2) {
+                        body = `<div class="trend-controls">${select}</div><div class="trend-empty">Log this exercise on at least 2 different dates to see progress.</div>`;
+                    } else {
+                        const cur = pts[pts.length-1].value, first = pts[0].value;
+                        const change = +(cur - first).toFixed(1);
+                        const days = Math.max(1, Math.round((pts[pts.length-1].t - pts[0].t) / 86400000));
+                        body = `<div class="trend-controls">${select}</div>`
+                             + trendStats(cur, change, days, change >= 0, 'kg')
+                             + `<div class="trend-chart">${buildLineChart(pts, '#60a5fa', 'liftFill')}</div>`;
+                    }
+                }
+            }
             return `
             <div class="trend-section">
                 <div class="trend-head">
-                    <span class="trend-title">📈 Trends</span>
+                    <span class="trend-title">📈 Progress Trends</span>
                     <div class="bw-edit">${bwCtrl}</div>
                 </div>
-                <div class="trend-controls">
-                    <select class="lift-select" onchange="setChartLift(this.value)">
-                        ${liftNames.map(n => `<option value="${n}" ${n === chartLift ? 'selected' : ''}>${n}</option>`).join('')}
-                    </select>
+                <div class="trend-tabs">
+                    <button class="trend-tab ${trendTab==='bodyweight'?'active':''}" onclick="setTrendTab('bodyweight')">Bodyweight</button>
+                    <button class="trend-tab ${trendTab==='lift'?'active':''}" onclick="setTrendTab('lift')">Lift Progress</button>
                 </div>
-                <div class="trend-chart">${chart}</div>
-                <div class="trend-legend">
-                    <div class="legend-item"><span class="trend-dot" style="background:#a855f7"></span>Bodyweight</div>
-                    <div class="legend-item"><span class="trend-dot" style="background:#60a5fa"></span>${chartLift}</div>
-                </div>
+                ${body}
             </div>`;
         }
 
@@ -1541,7 +1625,7 @@
             }
         }
 
-        window.onload = () => { seedDemoHistory(); seedDemoBodyweight(); render(); };
+        window.onload = () => { seedDemoHistory(); seedDemoBodyweight(); seedDemoLifts(); render(); };
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
