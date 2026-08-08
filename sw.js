@@ -1,4 +1,4 @@
-const CACHE = 'gym-tracker-v10';
+const CACHE = 'gym-tracker-v11';
 
 const PRECACHE = [
   '.',
@@ -9,7 +9,10 @@ const PRECACHE = [
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(PRECACHE))
+    // cache:'reload' so a precache refresh can't be served a stale copy by the HTTP cache
+    caches.open(CACHE).then(cache =>
+      cache.addAll(PRECACHE.map(url => new Request(url, { cache: 'reload' })))
+    )
   );
   self.skipWaiting();
 });

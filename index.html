@@ -729,61 +729,73 @@
 
         /* ── Workout data ── */
         const workoutData = [
-          { day:"Day 1", title:"Push Heavy", icon:"🦍", focus:"Chest, Shoulders, Triceps", color:"from-orange-500 to-red-600",
+          { day:"Day 1", title:"Push A", icon:"🦍", focus:"Chest, Shoulders, Triceps", color:"from-orange-500 to-red-600",
+            note:"2–3 RIR on everything. Core work stays strict — never to failure.",
             exercises:[
-              { name:"Incline Chest Press", emoji:"💥", tags:["Upper Chest","Compound"], sets:3, reps:"6–10", rest:120, weight:"35–55 kg" },
+              { name:"Incline Chest Press", emoji:"💥", tags:["Upper Chest","Compound"], sets:3, reps:"8–10", rest:120, weight:"35–55 kg" },
               { name:"Flat Chest Press", emoji:"🧱", tags:["Mid Chest","Compound"], sets:3, reps:"8–12", rest:120, weight:"40–65 kg" },
-              { name:"Shoulder Press", emoji:"🥥", tags:["Front Delts"], sets:2, reps:"8–12", rest:120, weight:"25–45 kg" },
+              { name:"Seated Shoulder Press", emoji:"🥥", tags:["Front Delts","Back Supported"], sets:2, reps:"8–12", rest:120, weight:"25–45 kg" },
               { name:"Cable Lateral Raise", emoji:"🦅", tags:["Side Delts"], sets:3, reps:"12–15", rest:60, weight:"5–10 kg per arm" },
-              { name:"Overhead Triceps Ext", emoji:"🐴", tags:["Long Head"], sets:2, reps:"10–12", rest:60, weight:"20–35 kg" },
+              { name:"Overhead Triceps Ext", emoji:"🐴", tags:["Long Head","Back Supported"], sets:2, reps:"10–15", rest:60, weight:"20–35 kg" },
+              { name:"Dead Bug", emoji:"🪲", tags:["Core","Anti-Extension"], sets:2, reps:"6–8 per side", rest:45, weight:"Bodyweight" },
             ]},
-          { day:"Day 2", title:"Pull Heavy", icon:"🦏", focus:"Back, Biceps, Rear Delts", color:"from-blue-500 to-cyan-600",
+          { day:"Day 2", title:"Pull A", icon:"🦏", focus:"Back, Biceps, Rear Delts", color:"from-blue-500 to-cyan-600",
+            note:"No torso swinging. If you need momentum to move it, the weight is too heavy.",
             exercises:[
               { name:"Lat Pulldown", emoji:"🦇", tags:["Lats","Width"], sets:3, reps:"8–12", rest:120, weight:"45–70 kg" },
-              { name:"Seated Cable Row", emoji:"🚣", tags:["Mid Back","Thickness"], sets:3, reps:"8–12", rest:120, weight:"45–70 kg" },
+              { name:"Chest-Supported Row", emoji:"🛡️", tags:["Mid Back","Thickness"], sets:3, reps:"8–12", rest:120, weight:"45–70 kg" },
               { name:"Rear Delt Fly", emoji:"🎯", tags:["Rear Delts"], sets:2, reps:"12–15", rest:90, weight:"25–45 kg" },
               { name:"Preacher Curl", emoji:"💪", tags:["Short Head"], sets:2, reps:"10–12", rest:60, weight:"20–35 kg" },
               { name:"Hammer Curl", emoji:"🔨", tags:["Brachialis"], sets:2, reps:"10–12", rest:60, weight:"10–16 kg dumbbells" },
+              { name:"Side Plank", emoji:"📐", tags:["Core","Anti-Lateral Flexion"], sets:2, reps:"20–30 sec per side", rest:45, weight:"Bodyweight" },
             ]},
-          { day:"Day 3", title:"Legs Heavy", icon:"🦖", focus:"Quads, Hams, Calves", color:"from-green-500 to-emerald-600",
-            note:"Be careful. At 123 kg, your knees and lower back handle a lot. Full range, controlled reps, no ego lifting.",
+          { day:"Day 3", title:"Legs A", icon:"🦖", focus:"Quads, Hams, Calves", color:"from-green-500 to-emerald-600",
+            note:"No RDL for these 4 weeks. On hack squat and leg press use a range you can control comfortably — don't force depth, and never let your hips peel off the pad.",
             exercises:[
-              { name:"Hack Squat", emoji:"🏗️", tags:["Quads","Compound"], sets:3, reps:"6–10", rest:120, weight:"40–80 kg added" },
-              { name:"Leg Press", emoji:"🚂", tags:["Overall Leg"], sets:2, reps:"8–12", rest:120, weight:"120–200 kg" },
-              { name:"Romanian Deadlift", emoji:"🏋️", tags:["Hamstrings","Glutes"], sets:3, reps:"8–10", rest:120, weight:"50–80 kg barbell / 20–32 kg DBs" },
-              { name:"Seated Leg Curl", emoji:"🪝", tags:["Hamstrings"], sets:2, reps:"10–12", rest:90, weight:"35–60 kg" },
-              { name:"Standing Calf Raise", emoji:"🦵", tags:["Calves"], sets:3, reps:"12–15", rest:90, weight:"60–100 kg" },
+              { name:"Hack Squat", emoji:"🏗️", tags:["Quads","Compound"], sets:3, reps:"8–10", rest:120, weight:"40–80 kg added" },
+              { name:"Leg Press", emoji:"🚂", tags:["Overall Leg"], sets:2, reps:"10–12", rest:120, weight:"120–200 kg" },
+              { name:"Seated Leg Curl", emoji:"🪝", tags:["Hamstrings"], sets:3, reps:"8–12", rest:90, weight:"35–60 kg" },
+              { name:"Leg Extension", emoji:"🦵", tags:["Quads Isolation"], sets:2, reps:"12–15", rest:90, weight:"40–70 kg" },
+              { name:"Leg Press Calf Raise", emoji:"👟", tags:["Calves","No Spinal Load"], sets:3, reps:"12–15", rest:90, weight:"Start light, build up" },
+              { name:"Bird Dog", emoji:"🐕", tags:["Core","Anti-Rotation"], sets:2, reps:"6–8 per side", rest:45, weight:"Bodyweight" },
             ]},
-          { day:"Day 4", title:"Push Volume", icon:"⚡", focus:"Chest, Shoulders, Triceps", color:"from-purple-500 to-pink-600",
+          { day:"Day 4", title:"Push B", icon:"⚡", focus:"Chest, Shoulders, Triceps", color:"from-purple-500 to-pink-600",
             exercises:[
               { name:"Pec Deck", emoji:"🦋", tags:["Chest Isolation"], sets:3, reps:"12–15", rest:90, weight:"35–60 kg" },
               { name:"Incline Cable Fly", emoji:"🪁", tags:["Upper Chest","Isolation"], sets:2, reps:"12–15", rest:60, weight:"10–20 kg per arm" },
-              { name:"Push-ups", emoji:"🔥", tags:["Burnout"], sets:2, reps:"1–2 RIR", rest:90, weight:"Bodyweight (or Incline)" },
+              { name:"Push-ups", emoji:"🔥", tags:["Burnout"], sets:2, reps:"1–3 RIR", rest:90, weight:"Bodyweight (or Incline)" },
               { name:"Dumbbell Lateral Raise", emoji:"🦅", tags:["Side Delts"], sets:3, reps:"12–15", rest:60, weight:"6–10 kg DBs" },
-              { name:"Cable Lateral Raise", emoji:"🎯", tags:["Side Delts"], sets:1, reps:"15", rest:60, weight:"5–10 kg per arm" },
+              { name:"Cable Lateral Raise", emoji:"🎯", tags:["Side Delts"], sets:1, reps:"15–20", rest:60, weight:"5–10 kg per arm" },
               { name:"Triceps Rope Pushdown", emoji:"🐴", tags:["Triceps"], sets:3, reps:"10–15", rest:60, weight:"25–45 kg" },
+              { name:"Pallof Press", emoji:"🧲", tags:["Core","Anti-Rotation"], sets:2, reps:"8–12 per side", rest:45, weight:"10–20 kg" },
             ]},
-          { day:"Day 5", title:"Pull Volume", icon:"🌊", focus:"Back, Biceps, Rear Delts", color:"from-indigo-500 to-blue-600",
+          { day:"Day 5", title:"Pull B", icon:"🌊", focus:"Back, Biceps, Rear Delts", color:"from-indigo-500 to-blue-600",
             exercises:[
               { name:"Chest-Supported Row", emoji:"🛡️", tags:["Mid Back"], sets:3, reps:"8–12", rest:120, weight:"45–75 kg" },
               { name:"Straight-Arm Pulldown", emoji:"⛷️", tags:["Lats Isolation"], sets:3, reps:"12–15", rest:90, weight:"20–35 kg" },
               { name:"Face Pull", emoji:"👹", tags:["Upper Back","Health"], sets:3, reps:"12–15", rest:60, weight:"15–30 kg" },
               { name:"Dumbbell Curl", emoji:"💪", tags:["Biceps"], sets:2, reps:"10–12", rest:60, weight:"10–16 kg DBs" },
               { name:"Cable Curl", emoji:"⛓️", tags:["Constant Tension"], sets:2, reps:"10–12", rest:60, weight:"20–35 kg" },
+              { name:"Side Plank", emoji:"📐", tags:["Core","Anti-Lateral Flexion"], sets:2, reps:"20–30 sec per side", rest:45, weight:"Bodyweight" },
             ]},
-          { day:"Day 6", title:"Legs Volume", icon:"🔋", focus:"Quads, Hams, Glutes", color:"from-teal-500 to-emerald-600",
+          { day:"Day 6", title:"Legs B", icon:"🔋", focus:"Quads, Hams, Glutes", color:"from-teal-500 to-emerald-600",
+            note:"Hip thrust: controlled extension, squeeze the glutes, stop at neutral. Don't hyperextend your lower back.",
             exercises:[
               { name:"Leg Extension", emoji:"🦵", tags:["Quads Isolation"], sets:3, reps:"12–15", rest:90, weight:"40–70 kg" },
               { name:"Seated Leg Curl", emoji:"🪝", tags:["Hamstrings"], sets:3, reps:"12–15", rest:90, weight:"35–60 kg" },
-              { name:"Hip Thrust", emoji:"🍑", tags:["Glutes"], sets:3, reps:"8–12", rest:90, weight:"70–120 kg" },
+              { name:"Machine Hip Thrust", emoji:"🍑", tags:["Glutes","Stop At Neutral"], sets:2, reps:"10–15", rest:90, weight:"70–120 kg" },
               { name:"Adductor Machine", emoji:"🗜️", tags:["Inner Thigh"], sets:2, reps:"12–15", rest:90, weight:"35–65 kg" },
               { name:"Abductor Machine", emoji:"🛸", tags:["Outer Glute"], sets:2, reps:"12–15", rest:90, weight:"35–65 kg" },
               { name:"Seated Calf Raise", emoji:"👟", tags:["Soleus"], sets:3, reps:"12–15", rest:90, weight:"35–70 kg" },
+              { name:"Dead Bug", emoji:"🪲", tags:["Core","Anti-Extension"], sets:2, reps:"6–8 per side", rest:45, weight:"Bodyweight" },
             ]},
           { day:"Day 7", title:"Full Rest", icon:"🧘‍♂️", focus:"Recovery", color:"from-slate-500 to-slate-700", isRest:true,
+            note:"Staying active beats long periods of rest for low-back pain. Keep moving, just don't train.",
             exercises:[
               { name:"Walking (Low Intensity)", emoji:"🚶‍♂️", tags:["Active Recovery"], sets:1, reps:"30–60 mins", rest:0, weight:"Bodyweight" },
+              { name:"Normal Daily Activity", emoji:"🧍", tags:["Keep Moving"], sets:1, reps:"All day", rest:0, weight:"N/A" },
               { name:"Nutrition Check", emoji:"🥗", tags:["Diet"], sets:1, reps:"Deficit", rest:0, weight:"N/A" },
+              { name:"Sleep Check", emoji:"😴", tags:["Recovery"], sets:1, reps:"7–9 hrs", rest:0, weight:"N/A" },
             ]},
         ];
 
@@ -793,9 +805,16 @@
         let loggedWeights = JSON.parse(localStorage.getItem('gymLoggedWeights') || '{}');
         let editingWeightKey = null;     // main view: exercise index being edited
         let editingCalWeightKey = null;  // calendar: `${dateKey}|${exIdx}` being edited
-        let timeLeft = 0;
-        let totalRestTime = 0;
+        /* Rest timer is wall-clock based: we store the moment it ends, never a
+           countdown, so backgrounding the app (which throttles or suspends
+           setInterval) can't make it drift or stall. */
+        const TIMER_KEY = 'gymRestTimer';
+        let timerEndsAt = 0;      // epoch ms the rest ends; 0 = no timer running
+        let totalRestTime = 0;    // seconds, for the progress ring
+        let timeLeft = 0;         // derived from the clock, never decremented
         let timerInterval = null;
+        let wakeLock = null;
+        let audioCtx = null;
 
         /* ── Profile Calendar State ── */
         let showProfileCalendar = false;
@@ -1422,21 +1441,127 @@
 
         function changeDay(idx) { activeDay = idx; editingWeightKey = null; render(); }
 
+        /* Recompute timeLeft from the clock. Everything else reads this. */
+        function syncTimer() {
+            timeLeft = timerEndsAt ? Math.max(0, Math.ceil((timerEndsAt - Date.now()) / 1000)) : 0;
+            return timeLeft;
+        }
+
         function startTimer(secs) {
-            stopTimer();
-            timeLeft = totalRestTime = secs;
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                if (timeLeft <= 0) { stopTimer(); return; }
-                updateTimerDOM();
-            }, 1000);
+            stopTicking();
+            totalRestTime = secs;
+            timerEndsAt = Date.now() + secs * 1000;
+            localStorage.setItem(TIMER_KEY, JSON.stringify({ endsAt: timerEndsAt, total: totalRestTime }));
+            syncTimer();
+            startTicking();
+            primeAudio();      // we're inside the tap that logged the set, so audio unlocks here
+            requestWakeLock();
             render();
         }
 
+        /* Full teardown: used by Skip, Reset Day, and natural completion. */
         function stopTimer() {
+            stopTicking();
+            releaseWakeLock();
+            timerEndsAt = 0;
+            timeLeft = 0;
+            localStorage.removeItem(TIMER_KEY);
+        }
+
+        function startTicking() {
+            stopTicking();
+            // 250ms so the digits flip on the right second even after a resume
+            timerInterval = setInterval(tick, 250);
+        }
+
+        function stopTicking() {
             clearInterval(timerInterval);
             timerInterval = null;
-            timeLeft = 0;
+        }
+
+        function tick() {
+            const prev = timeLeft;
+            if (syncTimer() > 0) {
+                if (timeLeft !== prev) updateTimerDOM();
+                return;
+            }
+            stopTimer();
+            restOverCue();
+            render();
+        }
+
+        /* Called on load, on tab resume, and on bfcache restore. */
+        function resumeTimer() {
+            if (!timerEndsAt) return;
+            if (syncTimer() > 0) {
+                startTicking();
+                requestWakeLock();
+                updateTimerDOM();
+            } else {
+                // It ran out while we were away — clear it silently rather than
+                // buzzing for a rest that ended minutes ago.
+                stopTimer();
+                render();
+            }
+        }
+
+        function restoreTimer() {
+            let saved = null;
+            try { saved = JSON.parse(localStorage.getItem(TIMER_KEY) || 'null'); } catch (e) { saved = null; }
+            if (!saved || !saved.endsAt) return;
+            timerEndsAt = saved.endsAt;
+            totalRestTime = saved.total || 0;
+            if (syncTimer() > 0) { startTicking(); requestWakeLock(); }
+            else stopTimer();
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            // Keep ticking while hidden so the cue still fires if the browser
+            // lets us run; resumeTimer corrects the clock either way.
+            if (document.hidden) releaseWakeLock();
+            else resumeTimer();
+        });
+        window.addEventListener('pageshow', resumeTimer);
+        window.addEventListener('focus', resumeTimer);
+
+        /* ── Rest-over cue + screen wake lock ── */
+        function primeAudio() {
+            try {
+                const Ctx = window.AudioContext || window.webkitAudioContext;
+                if (!Ctx) return;
+                if (!audioCtx) audioCtx = new Ctx();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            } catch (e) { audioCtx = null; }
+        }
+
+        function restOverCue() {
+            try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
+            try {
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = 880;
+                gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.6);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.6);
+            } catch (e) {}
+        }
+
+        async function requestWakeLock() {
+            try {
+                if (!('wakeLock' in navigator) || wakeLock) return;
+                wakeLock = await navigator.wakeLock.request('screen');
+                wakeLock.addEventListener('release', () => { wakeLock = null; });
+            } catch (e) { wakeLock = null; }
+        }
+
+        function releaseWakeLock() {
+            try { if (wakeLock) wakeLock.release(); } catch (e) {}
+            wakeLock = null;
         }
 
         function updateTimerDOM() {
@@ -1454,6 +1579,7 @@
 
         /* ── Render ── */
         function render() {
+            syncTimer();   // always draw the timer from the clock, not stale state
             const w = workoutData[activeDay];
             const gradClass = GRAD[w.color] || 'g-slate';
             const totalSets = w.exercises.reduce((a, ex) => a + ex.sets, 0);
@@ -1625,7 +1751,7 @@
             }
         }
 
-        window.onload = () => { seedDemoHistory(); seedDemoBodyweight(); seedDemoLifts(); render(); };
+        window.onload = () => { seedDemoHistory(); seedDemoBodyweight(); seedDemoLifts(); restoreTimer(); render(); };
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
