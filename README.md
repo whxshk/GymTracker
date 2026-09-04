@@ -7,7 +7,7 @@ Designed with a dark cyber aesthetic, rest timers, workout progression tracking,
 Built for lifters focused on:
 - Fat loss while maintaining muscle
 - Aesthetic hypertrophy
-- Push/Pull/Legs structure
+- Upper/Lower split structure
 - High adherence during cuts
 - Simple tracking without clutter
 
@@ -36,7 +36,7 @@ Built for lifters focused on:
 ## Features
 
 - 📱 Mobile-first responsive design
-- 🧠 Smart Push/Pull/Legs split
+- 🧠 Smart 4-day Upper/Lower split (Sun/Thu/Fri/Sat)
 - ⏱️ Built-in rest timer
 - ✅ Set completion tracking
 - 📊 Progress bar for daily workouts
@@ -58,7 +58,7 @@ This app is specifically structured around maintaining intensity while recoverin
 - Controlled isolation work for aesthetics
 - Built-in rest management
 - Recovery reminders to avoid burnout
-- Sustainable 6-day split with 1 full recovery day
+- Sustainable 4-day split (Sun/Thu/Fri/Sat) with 3 full recovery days
 
 ### The programming emphasizes:
 - Upper chest

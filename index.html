@@ -727,75 +727,76 @@
             'from-slate-500 to-slate-700':  'g-slate',
         };
 
-        /* ── Workout data ── */
+        /* ── Workout data ──
+           4-day Upper/Lower split, trained Sun/Thu/Fri/Sat. The array is always
+           indexed Monday(0)…Sunday(6) — everything else in the app (activeDay
+           default, calendar history, demo seeding) derives its index the same
+           way, so Mon/Tue/Wed just sit here as rest days. */
         const workoutData = [
-          { day:"Day 1", title:"Push A", icon:"🦍", focus:"Chest, Shoulders, Triceps", color:"from-orange-500 to-red-600",
-            note:"2–3 RIR on everything. Core work stays strict — never to failure.",
-            exercises:[
-              { name:"Incline Chest Press", emoji:"💥", tags:["Upper Chest","Compound"], sets:3, reps:"8–10", rest:120, weight:"35–55 kg" },
-              { name:"Flat Chest Press", emoji:"🧱", tags:["Mid Chest","Compound"], sets:3, reps:"8–12", rest:120, weight:"40–65 kg" },
-              { name:"Seated Shoulder Press", emoji:"🥥", tags:["Front Delts","Back Supported"], sets:2, reps:"8–12", rest:120, weight:"25–45 kg" },
-              { name:"Cable Lateral Raise", emoji:"🦅", tags:["Side Delts"], sets:3, reps:"12–15", rest:60, weight:"5–10 kg per arm" },
-              { name:"Overhead Triceps Ext", emoji:"🐴", tags:["Long Head","Back Supported"], sets:2, reps:"10–15", rest:60, weight:"20–35 kg" },
-              { name:"Dead Bug", emoji:"🪲", tags:["Core","Anti-Extension"], sets:2, reps:"6–8 per side", rest:45, weight:"Bodyweight" },
-            ]},
-          { day:"Day 2", title:"Pull A", icon:"🦏", focus:"Back, Biceps, Rear Delts", color:"from-blue-500 to-cyan-600",
-            note:"No torso swinging. If you need momentum to move it, the weight is too heavy.",
-            exercises:[
-              { name:"Lat Pulldown", emoji:"🦇", tags:["Lats","Width"], sets:3, reps:"8–12", rest:120, weight:"45–70 kg" },
-              { name:"Chest-Supported Row", emoji:"🛡️", tags:["Mid Back","Thickness"], sets:3, reps:"8–12", rest:120, weight:"45–70 kg" },
-              { name:"Rear Delt Fly", emoji:"🎯", tags:["Rear Delts"], sets:2, reps:"12–15", rest:90, weight:"25–45 kg" },
-              { name:"Preacher Curl", emoji:"💪", tags:["Short Head"], sets:2, reps:"10–12", rest:60, weight:"20–35 kg" },
-              { name:"Hammer Curl", emoji:"🔨", tags:["Brachialis"], sets:2, reps:"10–12", rest:60, weight:"10–16 kg dumbbells" },
-              { name:"Side Plank", emoji:"📐", tags:["Core","Anti-Lateral Flexion"], sets:2, reps:"20–30 sec per side", rest:45, weight:"Bodyweight" },
-            ]},
-          { day:"Day 3", title:"Legs A", icon:"🦖", focus:"Quads, Hams, Calves", color:"from-green-500 to-emerald-600",
-            note:"No RDL for these 4 weeks. On hack squat and leg press use a range you can control comfortably — don't force depth, and never let your hips peel off the pad.",
-            exercises:[
-              { name:"Hack Squat", emoji:"🏗️", tags:["Quads","Compound"], sets:3, reps:"8–10", rest:120, weight:"40–80 kg added" },
-              { name:"Leg Press", emoji:"🚂", tags:["Overall Leg"], sets:2, reps:"10–12", rest:120, weight:"120–200 kg" },
-              { name:"Seated Leg Curl", emoji:"🪝", tags:["Hamstrings"], sets:3, reps:"8–12", rest:90, weight:"35–60 kg" },
-              { name:"Leg Extension", emoji:"🦵", tags:["Quads Isolation"], sets:2, reps:"12–15", rest:90, weight:"40–70 kg" },
-              { name:"Leg Press Calf Raise", emoji:"👟", tags:["Calves","No Spinal Load"], sets:3, reps:"12–15", rest:90, weight:"Start light, build up" },
-              { name:"Bird Dog", emoji:"🐕", tags:["Core","Anti-Rotation"], sets:2, reps:"6–8 per side", rest:45, weight:"Bodyweight" },
-            ]},
-          { day:"Day 4", title:"Push B", icon:"⚡", focus:"Chest, Shoulders, Triceps", color:"from-purple-500 to-pink-600",
-            exercises:[
-              { name:"Pec Deck", emoji:"🦋", tags:["Chest Isolation"], sets:3, reps:"12–15", rest:90, weight:"35–60 kg" },
-              { name:"Incline Cable Fly", emoji:"🪁", tags:["Upper Chest","Isolation"], sets:2, reps:"12–15", rest:60, weight:"10–20 kg per arm" },
-              { name:"Push-ups", emoji:"🔥", tags:["Burnout"], sets:2, reps:"1–3 RIR", rest:90, weight:"Bodyweight (or Incline)" },
-              { name:"Dumbbell Lateral Raise", emoji:"🦅", tags:["Side Delts"], sets:3, reps:"12–15", rest:60, weight:"6–10 kg DBs" },
-              { name:"Cable Lateral Raise", emoji:"🎯", tags:["Side Delts"], sets:1, reps:"15–20", rest:60, weight:"5–10 kg per arm" },
-              { name:"Triceps Rope Pushdown", emoji:"🐴", tags:["Triceps"], sets:3, reps:"10–15", rest:60, weight:"25–45 kg" },
-              { name:"Pallof Press", emoji:"🧲", tags:["Core","Anti-Rotation"], sets:2, reps:"8–12 per side", rest:45, weight:"10–20 kg" },
-            ]},
-          { day:"Day 5", title:"Pull B", icon:"🌊", focus:"Back, Biceps, Rear Delts", color:"from-indigo-500 to-blue-600",
-            exercises:[
-              { name:"Chest-Supported Row", emoji:"🛡️", tags:["Mid Back"], sets:3, reps:"8–12", rest:120, weight:"45–75 kg" },
-              { name:"Straight-Arm Pulldown", emoji:"⛷️", tags:["Lats Isolation"], sets:3, reps:"12–15", rest:90, weight:"20–35 kg" },
-              { name:"Face Pull", emoji:"👹", tags:["Upper Back","Health"], sets:3, reps:"12–15", rest:60, weight:"15–30 kg" },
-              { name:"Dumbbell Curl", emoji:"💪", tags:["Biceps"], sets:2, reps:"10–12", rest:60, weight:"10–16 kg DBs" },
-              { name:"Cable Curl", emoji:"⛓️", tags:["Constant Tension"], sets:2, reps:"10–12", rest:60, weight:"20–35 kg" },
-              { name:"Side Plank", emoji:"📐", tags:["Core","Anti-Lateral Flexion"], sets:2, reps:"20–30 sec per side", rest:45, weight:"Bodyweight" },
-            ]},
-          { day:"Day 6", title:"Legs B", icon:"🔋", focus:"Quads, Hams, Glutes", color:"from-teal-500 to-emerald-600",
-            note:"Hip thrust: controlled extension, squeeze the glutes, stop at neutral. Don't hyperextend your lower back.",
-            exercises:[
-              { name:"Leg Extension", emoji:"🦵", tags:["Quads Isolation"], sets:3, reps:"12–15", rest:90, weight:"40–70 kg" },
-              { name:"Seated Leg Curl", emoji:"🪝", tags:["Hamstrings"], sets:3, reps:"12–15", rest:90, weight:"35–60 kg" },
-              { name:"Machine Hip Thrust", emoji:"🍑", tags:["Glutes","Stop At Neutral"], sets:2, reps:"10–15", rest:90, weight:"70–120 kg" },
-              { name:"Adductor Machine", emoji:"🗜️", tags:["Inner Thigh"], sets:2, reps:"12–15", rest:90, weight:"35–65 kg" },
-              { name:"Abductor Machine", emoji:"🛸", tags:["Outer Glute"], sets:2, reps:"12–15", rest:90, weight:"35–65 kg" },
-              { name:"Seated Calf Raise", emoji:"👟", tags:["Soleus"], sets:3, reps:"12–15", rest:90, weight:"35–70 kg" },
-              { name:"Dead Bug", emoji:"🪲", tags:["Core","Anti-Extension"], sets:2, reps:"6–8 per side", rest:45, weight:"Bodyweight" },
-            ]},
-          { day:"Day 7", title:"Full Rest", icon:"🧘‍♂️", focus:"Recovery", color:"from-slate-500 to-slate-700", isRest:true,
+          { day:"Monday", title:"Full Rest", icon:"🧘‍♂️", focus:"Recovery", color:"from-slate-500 to-slate-700", isRest:true,
             note:"Staying active beats long periods of rest for low-back pain. Keep moving, just don't train.",
             exercises:[
               { name:"Walking (Low Intensity)", emoji:"🚶‍♂️", tags:["Active Recovery"], sets:1, reps:"30–60 mins", rest:0, weight:"Bodyweight" },
               { name:"Normal Daily Activity", emoji:"🧍", tags:["Keep Moving"], sets:1, reps:"All day", rest:0, weight:"N/A" },
               { name:"Nutrition Check", emoji:"🥗", tags:["Diet"], sets:1, reps:"Deficit", rest:0, weight:"N/A" },
               { name:"Sleep Check", emoji:"😴", tags:["Recovery"], sets:1, reps:"7–9 hrs", rest:0, weight:"N/A" },
+            ]},
+          { day:"Tuesday", title:"Full Rest", icon:"🧘‍♂️", focus:"Recovery", color:"from-slate-500 to-slate-700", isRest:true,
+            note:"Staying active beats long periods of rest for low-back pain. Keep moving, just don't train.",
+            exercises:[
+              { name:"Walking (Low Intensity)", emoji:"🚶‍♂️", tags:["Active Recovery"], sets:1, reps:"30–60 mins", rest:0, weight:"Bodyweight" },
+              { name:"Normal Daily Activity", emoji:"🧍", tags:["Keep Moving"], sets:1, reps:"All day", rest:0, weight:"N/A" },
+              { name:"Nutrition Check", emoji:"🥗", tags:["Diet"], sets:1, reps:"Deficit", rest:0, weight:"N/A" },
+              { name:"Sleep Check", emoji:"😴", tags:["Recovery"], sets:1, reps:"7–9 hrs", rest:0, weight:"N/A" },
+            ]},
+          { day:"Wednesday", title:"Full Rest", icon:"🧘‍♂️", focus:"Recovery", color:"from-slate-500 to-slate-700", isRest:true,
+            note:"Staying active beats long periods of rest for low-back pain. Keep moving, just don't train.",
+            exercises:[
+              { name:"Walking (Low Intensity)", emoji:"🚶‍♂️", tags:["Active Recovery"], sets:1, reps:"30–60 mins", rest:0, weight:"Bodyweight" },
+              { name:"Normal Daily Activity", emoji:"🧍", tags:["Keep Moving"], sets:1, reps:"All day", rest:0, weight:"N/A" },
+              { name:"Nutrition Check", emoji:"🥗", tags:["Diet"], sets:1, reps:"Deficit", rest:0, weight:"N/A" },
+              { name:"Sleep Check", emoji:"😴", tags:["Recovery"], sets:1, reps:"7–9 hrs", rest:0, weight:"N/A" },
+            ]},
+          { day:"Thursday", title:"Lower A", icon:"🦖", focus:"Quads, Hams, Calves", color:"from-green-500 to-emerald-600",
+            note:"Moderate load, controlled tempo. Full range on every rep — this is a recovery-friendly session, not a max-effort day.",
+            exercises:[
+              { name:"Hack Squat", emoji:"🏗️", tags:["Quads","Compound"], sets:3, reps:"8–10", rest:120, weight:"40–80 kg added" },
+              { name:"Leg Press", emoji:"🚂", tags:["Overall Leg"], sets:3, reps:"10–12", rest:90, weight:"120–200 kg" },
+              { name:"Seated Leg Curl", emoji:"🪝", tags:["Hamstrings"], sets:3, reps:"10–12", rest:90, weight:"35–60 kg" },
+              { name:"Leg Extension", emoji:"🦵", tags:["Quads Isolation"], sets:3, reps:"12–15", rest:90, weight:"40–70 kg" },
+              { name:"Standing Calf Raise", emoji:"👟", tags:["Calves","Gastrocnemius"], sets:3, reps:"12–15", rest:60, weight:"60–100 kg" },
+            ]},
+          { day:"Friday", title:"Upper B", icon:"⚡", focus:"Chest, Back, Shoulders, Arms", color:"from-purple-500 to-pink-600",
+            note:"Volume day — chase the pump. 1–2 reps in reserve, focus on the squeeze over the load.",
+            exercises:[
+              { name:"Flat Chest Press (DB)", emoji:"🧱", tags:["Mid Chest","Compound"], sets:3, reps:"10–12", rest:90, weight:"40–65 kg" },
+              { name:"Chest-Supported Row", emoji:"🛡️", tags:["Mid Back"], sets:3, reps:"10–12", rest:90, weight:"45–75 kg" },
+              { name:"Pec Deck", emoji:"🦋", tags:["Chest Isolation"], sets:3, reps:"12–15", rest:60, weight:"35–60 kg" },
+              { name:"Rear Delt Fly (Machine)", emoji:"🎯", tags:["Rear Delts"], sets:3, reps:"12–15", rest:60, weight:"25–45 kg" },
+              { name:"Dumbbell Lateral Raise", emoji:"🦅", tags:["Side Delts"], sets:4, reps:"12–15", rest:60, weight:"6–10 kg DBs" },
+              { name:"Triceps Rope Pushdown", emoji:"🐴", tags:["Triceps"], sets:3, reps:"10–15", rest:60, weight:"25–45 kg" },
+              { name:"Hammer Curl", emoji:"🔨", tags:["Brachialis"], sets:3, reps:"10–12", rest:60, weight:"10–16 kg DBs" },
+            ]},
+          { day:"Saturday", title:"Lower B", icon:"🔋", focus:"Quads, Hams, Glutes", color:"from-teal-500 to-emerald-600",
+            note:"Pump work, low CNS demand. Light-moderate loads, strict form, squeeze every rep.",
+            exercises:[
+              { name:"Leg Extension", emoji:"🦵", tags:["Quads Isolation"], sets:4, reps:"12–15", rest:60, weight:"40–70 kg" },
+              { name:"Seated Leg Curl", emoji:"🪝", tags:["Hamstrings"], sets:4, reps:"12–15", rest:60, weight:"35–60 kg" },
+              { name:"Adductor Machine", emoji:"🗜️", tags:["Inner Thigh"], sets:3, reps:"12–15", rest:60, weight:"35–65 kg" },
+              { name:"Abductor Machine", emoji:"🛸", tags:["Outer Glute"], sets:3, reps:"12–15", rest:60, weight:"35–65 kg" },
+              { name:"Bulgarian Split Squat", emoji:"🧎", tags:["Quads","Glutes","Unilateral"], sets:3, reps:"12–15 per leg", rest:60, weight:"Bodyweight or Light DBs" },
+              { name:"Seated Calf Raise", emoji:"👟", tags:["Soleus"], sets:3, reps:"12–15", rest:60, weight:"35–70 kg" },
+            ]},
+          { day:"Sunday", title:"Upper A", icon:"🦍", focus:"Chest, Back, Shoulders, Arms", color:"from-orange-500 to-red-600",
+            note:"Heavy day. 2–3 RIR on the big compounds — build the session around control, not ego.",
+            exercises:[
+              { name:"Incline Chest Press", emoji:"💥", tags:["Upper Chest","Compound"], sets:4, reps:"6–10", rest:120, weight:"35–55 kg" },
+              { name:"Lat Pulldown (Wide Grip)", emoji:"🦇", tags:["Lats","Width"], sets:4, reps:"8–12", rest:120, weight:"45–70 kg" },
+              { name:"Shoulder Press (Machine)", emoji:"🥥", tags:["Front Delts"], sets:3, reps:"8–12", rest:120, weight:"25–45 kg" },
+              { name:"Seated Cable Row", emoji:"🚣", tags:["Mid Back","Thickness"], sets:3, reps:"8–12", rest:120, weight:"45–70 kg" },
+              { name:"Cable Lateral Raise", emoji:"🦅", tags:["Side Delts"], sets:3, reps:"12–15", rest:60, weight:"5–10 kg per arm" },
+              { name:"Overhead Triceps Extension", emoji:"🐴", tags:["Long Head"], sets:3, reps:"10–12", rest:60, weight:"20–35 kg" },
+              { name:"Incline Curl", emoji:"💪", tags:["Biceps","Long Head Stretch"], sets:3, reps:"10–12", rest:60, weight:"10–16 kg DBs" },
             ]},
         ];
 
@@ -869,8 +870,8 @@
             const hist = getHistory();
             const today = new Date();
             const plans = [
-                { dayIdx: 0, lift: 'Incline Chest Press', sessions: [[32,30],[27,32.5],[20,35],[13,37.5],[6,40]] },
-                { dayIdx: 2, lift: 'Hack Squat',          sessions: [[30,80],[16,90],[2,100]] },
+                { dayIdx: 6, lift: 'Incline Chest Press', sessions: [[32,30],[27,32.5],[20,35],[13,37.5],[6,40]] },
+                { dayIdx: 3, lift: 'Hack Squat',          sessions: [[30,80],[16,90],[2,100]] },
             ];
             plans.forEach(({ dayIdx, lift, sessions }) => {
                 const w = workoutData[dayIdx];

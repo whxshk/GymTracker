@@ -1,7 +1,7 @@
 {
   "name": "Cutting Gym Tracker",
   "short_name": "Gym Tracker",
-  "description": "Your personal PPL cutting program tracker",
+  "description": "Your personal Upper/Lower cutting program tracker",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
